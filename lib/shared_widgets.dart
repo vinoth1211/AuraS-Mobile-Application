@@ -87,7 +87,7 @@ class CustomNavigationBar extends StatelessWidget {
                   () => Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const SkinAnalysisPage(),
+                      builder: (context) => const AISkinAnalysisScreen(),
                     ),
                   ),
             ),

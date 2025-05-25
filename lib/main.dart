@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'home_page.dart';
 import 'WelcomeScreen.dart';
 import 'login.dart';
 // import 'welcome.dart'; // Make sure this import points to the correct file containing WelcomeScreen
@@ -88,6 +89,8 @@ class AuraSApp extends StatelessWidget {
         '/startup': (context) => const WelcomeScreen(),
         '/welcome': (context) => const WelcomeScreen(),
         '/login': (context) => const LoginScreen(),
+        '/home': (context) => const HomePage(),
+
       },
     );
   }

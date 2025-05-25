@@ -1,201 +1,7 @@
-// import 'package:flutter/material.dart';
-// import 'package:skincare_app/shared_widgets.dart'; // Make sure this includes CustomHeader and CustomNavigationBar
-
-// class DoctorChannelingScreen extends StatelessWidget {
-//   const DoctorChannelingScreen({super.key});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       backgroundColor: Colors.white,
-//       body: SafeArea(
-//         child: Column(
-//           children: [
-//             const CustomHeader(),
-//             const CustomNavigationBar(activeRoute: 'Doctor Channelling'),
-//             Expanded(
-//               child: Container(
-//                 margin: const EdgeInsets.only(top: 16),
-//                 decoration: const BoxDecoration(
-//                   color: Color(0xFFF8F8F8),
-//                   borderRadius: BorderRadius.only(
-//                     topLeft: Radius.circular(30),
-//                     topRight: Radius.circular(30),
-//                   ),
-//                 ),
-//                 child: SingleChildScrollView(
-//                   padding:
-//                       const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-//                   child: Column(
-//                     crossAxisAlignment: CrossAxisAlignment.start,
-//                     children: [
-//                       // My Appointments Row
-//                       Row(
-//                         children: [
-//                           ElevatedButton(
-//                             onPressed: () {},
-//                             style: ElevatedButton.styleFrom(
-//                               backgroundColor: const Color(0xFFE97171),
-//                               shape: RoundedRectangleBorder(
-//                                 borderRadius: BorderRadius.circular(12),
-//                               ),
-//                             ),
-//                             child: const Padding(
-//                               padding: EdgeInsets.symmetric(
-//                                   horizontal: 12, vertical: 8),
-//                               child: Text(
-//                                 'My Appointments',
-//                                 style: TextStyle(color: Colors.white),
-//                               ),
-//                             ),
-//                           ),
-//                           const Spacer(),
-//                           IconButton(
-//                             onPressed: () {
-//                               Navigator.pop(context);
-//                             },
-//                             icon: const Icon(Icons.arrow_back_ios),
-//                           ),
-//                         ],
-//                       ),
-//                       const SizedBox(height: 16),
-
-//                       // Doctor Cards
-//                       _doctorCard(
-//                         name: 'Dr.Adithya',
-//                         imageUrl: 'assets/images/doc1.png',
-//                         date: '21 May',
-//                         time: '4.00 p.m.',
-//                       ),
-//                       _doctorCard(
-//                         name: 'Dr.Arachchige',
-//                         imageUrl: 'assets/images/doc2.png',
-//                         date: '24 May',
-//                         time: '6.00 p.m.',
-//                       ),
-//                       _doctorCard(
-//                         name: 'Dr.Smith',
-//                         imageUrl: 'assets/images/doc3.png',
-//                         date: '30 May',
-//                         time: '3.00 p.m.',
-//                       ),
-//                     ],
-//                   ),
-//                 ),
-//               ),
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-
-
-// Widget _doctorCard({
-//   required String name,
-//   required String imageUrl,
-//   required String date,
-//   required String time,
-// }) {
-//   return Container(
-//     margin: const EdgeInsets.only(bottom: 20),
-//     padding: const EdgeInsets.all(16),
-//     decoration: BoxDecoration(
-//       color: const Color(0xFF002C24),
-//       borderRadius: BorderRadius.circular(20),
-//     ),
-//     child: Row(
-//       crossAxisAlignment: CrossAxisAlignment.start,
-//       children: [
-//         // Circle Doctor Image
-//         CircleAvatar(
-//           radius: 30,
-//           backgroundImage: AssetImage(imageUrl),
-//         ),
-//         const SizedBox(width: 16),
-
-//         // Info and Button
-//         Expanded(
-//           child: Column(
-//             crossAxisAlignment: CrossAxisAlignment.start,
-//             children: [
-//               Text(
-//                 name,
-//                 style: const TextStyle(
-//                   color: Colors.white,
-//                   fontWeight: FontWeight.bold,
-//                   fontSize: 16,
-//                 ),
-//               ),
-//               const SizedBox(height: 8),
-//               Row(
-//                 children: [
-//                   Container(
-//                     padding:
-//                         const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-//                     decoration: BoxDecoration(
-//                       color: Colors.green,
-//                       borderRadius: BorderRadius.circular(8),
-//                     ),
-//                     child: Text(
-//                       date,
-//                       style: const TextStyle(
-//                         color: Colors.white,
-//                         fontWeight: FontWeight.bold,
-//                       ),
-//                     ),
-//                   ),
-//                   const SizedBox(width: 8),
-//                   Container(
-//                     padding:
-//                         const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-//                     decoration: BoxDecoration(
-//                       color: Colors.yellow[700],
-//                       borderRadius: BorderRadius.circular(8),
-//                     ),
-//                     child: Text(
-//                       time,
-//                       style: const TextStyle(
-//                         color: Colors.black,
-//                         fontWeight: FontWeight.bold,
-//                       ),
-//                     ),
-//                   ),
-//                 ],
-//               ),
-//               const SizedBox(height: 12),
-
-//               // Start Now Button
-//               Align(
-//                 alignment: Alignment.bottomRight,
-//                 child: ElevatedButton(
-//                   onPressed: () {
-//                     // Action for "Start Now"
-//                   },
-//                   style: ElevatedButton.styleFrom(
-//                     backgroundColor: const Color(0xFFE97171),
-//                     shape: RoundedRectangleBorder(
-//                       borderRadius: BorderRadius.circular(16),
-//                     ),
-//                   ),
-//                   child: const Text('Start Now'),
-//                 ),
-//               ),
-//             ],
-//           ),
-//         ),
-//       ],
-//     ),
-//   );
-// }
-
-//  }
-
-
-
-
 import 'package:flutter/material.dart';
 import 'package:skincare_app/shared_widgets.dart';
+// Add this import for your booking screen
+import 'package:skincare_app/BookAppointment.dart';
 
 class DoctorChannelingScreen extends StatelessWidget {
   const DoctorChannelingScreen({super.key});
@@ -210,72 +16,219 @@ class DoctorChannelingScreen extends StatelessWidget {
             const CustomHeader(),
             const CustomNavigationBar(activeRoute: 'Doctor Channelling'),
             Expanded(
-              child: Container(
-                margin: const EdgeInsets.only(top: 16),
-                decoration: const BoxDecoration(
-                  color: Color(0xFFF8F8F8),
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(30),
-                    topRight: Radius.circular(30),
-                  ),
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    // ... Keep previous widgets (SearchBar, Image, etc.) ...
+                       // Search Bar
+                    Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: SearchBar(
+                        hintText: 'Search Your Doctor',
+                        leading: const Icon(Icons.search),
+                      ),
+                    ),
+
+                    // Center Image
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 20),
+                      child: Image.asset(
+                        'assets/images/Doctorimage.png', // Update with your image path
+                        width: 200,
+                        height: 200,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+
+                    // Contact Your Doctor text
+                    const Padding(
+                      padding: EdgeInsets.only(bottom: 20),
+                      child: Text(
+                        'Contact Your Doctor',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
+                    ),
+
+                    // Short Description
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 40, vertical: 10),
+                      child: Text(
+                        'Book an appointment with doctor. Chat or talk with doctor and get consultations.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ),
+                    // Horizontal Scroll Dermatologist Cards
+                    SizedBox(
+                      height: 320, // Increased height for button
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.all(20),
+                        itemCount: 4, // Now 4 doctors
+                        separatorBuilder: (context, index) => const SizedBox(width: 20),
+                        itemBuilder: (context, index) => DermatologistCard(
+                          doctorName: _doctors[index]['name'],
+                          location: _doctors[index]['location'],
+                          rating: _doctors[index]['rating'],
+                          imagePath: _doctors[index]['image'],
+                          description: _doctors[index]['description'],
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Doctor data
+  final List<Map<String, dynamic>> _doctors = [
+    {
+      'name': 'Dr. Adithya',
+      'location': 'Colombo, Sri Lanka',
+      'rating': '4.9',
+      'image': 'assets/images/doc1.png',
+      'description': 'Board-certified dermatologist specializing in skin disorders. Expert in cosmetic dermatology.',
+    },
+    {
+      'name': 'Dr. Samantha',
+      'location': 'Kandy, Sri Lanka',
+      'rating': '4.7',
+      'image': 'assets/images/doc2.png',
+      'description': 'Pediatric dermatology specialist with 10+ years experience in child skin care.',
+    },
+    {
+      'name': 'Dr. Rajesh',
+      'location': 'Galle, Sri Lanka',
+      'rating': '4.8',
+      'image': 'assets/images/doc3.png',
+      'description': 'Acne treatment expert and laser therapy specialist. FDA-approved procedures.',
+    },
+    {
+      'name': 'Dr. Anjali',
+      'location': 'Jaffna, Sri Lanka',
+      'rating': '4.6',
+      'image': 'assets/images/Doctorimage.png',
+      'description': 'Hair and scalp disorder specialist. Trichology certified practitioner.',
+    },
+  ];
+}
+
+class DermatologistCard extends StatelessWidget {
+  final String doctorName;
+  final String location;
+  final String rating;
+  final String imagePath;
+  final String description;
+
+  const DermatologistCard({
+    super.key,
+    required this.doctorName,
+    required this.location,
+    required this.rating,
+    required this.imagePath,
+    required this.description,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => _navigateToBooking(context),
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        width: 280,
+        decoration: BoxDecoration(
+          color: const Color(0xFF004237),
+          borderRadius: BorderRadius.circular(15),
+        ),
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Top Row with Avatar and Rating
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                CircleAvatar(
+                  radius: 30,
+                  backgroundImage: AssetImage(imagePath),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.amber,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
                     children: [
-                      Row(
-                        children: [
-                          ElevatedButton(
-                            onPressed: () {},
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFE97171),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            child: const Padding(
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: 12, vertical: 8),
-                              child: Text(
-                                'My Appointments',
-                                style: TextStyle(color: Colors.white),
-                              ),
-                            ),
-                          ),
-                          const Spacer(),
-                          IconButton(
-                            onPressed: () => Navigator.pop(context),
-                            icon: const Icon(Icons.arrow_back_ios),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      _doctorCard(
-                        name: 'Dr. Adithya',
-                        imageUrl: 'assets/images/doc1.png',
-                        date: '21 May',
-                        time: '4:00 PM',
-                        location: 'Colombo Medical Center',
-                        rating: 4.5,
-                      ),
-                      _doctorCard(
-                        name: 'Dr. Arachchige',
-                        imageUrl: 'assets/images/doc2.png',
-                        date: '24 May',
-                        time: '6:00 PM',
-                        location: 'Kandy General Hospital',
-                        rating: 4.8,
-                      ),
-                      _doctorCard(
-                        name: 'Dr. Smith',
-                        imageUrl: 'assets/images/doc3.png',
-                        date: '30 May',
-                        time: '3:00 PM',
-                        location: 'Galle Health Clinic',
-                        rating: 4.2,
+                      const Icon(Icons.star, color: Colors.white, size: 16),
+                      const SizedBox(width: 4),
+                      Text(
+                        rating,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ],
+                  ),
+                ),
+              ),
+              ],
+            ),
+
+            const SizedBox(height: 20),
+            Text(
+              doctorName,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Text(
+              location,
+              style: const TextStyle(
+                color: Colors.white70,
+                fontSize: 14,
+              ),
+            ),
+            const SizedBox(height: 15),
+            Text(
+              description,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+              ),
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const Spacer(),
+            Center(
+              child: TextButton(
+                onPressed: () => _navigateToBooking(context),
+                style: TextButton.styleFrom(
+                  backgroundColor: const Color(0xFFE97171),
+                  padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
+                child: const Text(
+                  'Book Appointment',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
@@ -286,154 +239,16 @@ class DoctorChannelingScreen extends StatelessWidget {
     );
   }
 
-  Widget _doctorCard({
-    required String name,
-    required String imageUrl,
-    required String date,
-    required String time,
-    required String location,
-    required double rating,
-  }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 20),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
-            spreadRadius: 2,
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
+  void _navigateToBooking(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => BookAppointmentScreen(
+          doctorName: doctorName,
+          doctorImage: imagePath,
+          doctorSpecialty: description,
+        ),
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Left Section - Doctor Image
-          CircleAvatar(
-            radius: 30,
-            backgroundImage: AssetImage(imageUrl),
-          ),
-          const SizedBox(width: 16),
-
-          // Middle Section - Doctor Details
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Doctor Name
-                Text(
-                  name,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                ),
-                const SizedBox(height: 8),
-
-                // Location
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.location_on,
-                      size: 16,
-                      color: Colors.grey,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      location,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-
-                // Rating Stars
-                Row(
-                  children: [
-                    _buildStarRating(rating),
-                    const SizedBox(width: 8),
-                    Text(
-                      rating.toStringAsFixed(1),
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Colors.amber,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-
-          // Right Section - Date, Time, Button
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              // Date
-              Text(
-                date,
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 4),
-
-              // Time
-              Text(
-                time,
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: Colors.black87,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 12),
-
-              // Start Now Button
-              ElevatedButton(
-                onPressed: () {},
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFE97171),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                ),
-                child: const Text(
-                  'Start Now',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStarRating(double rating) {
-    return Row(
-      children: List.generate(5, (index) {
-        return Icon(
-          index < rating.floor() ? Icons.star : Icons.star_border,
-          color: Colors.amber,
-          size: 16,
-        );
-      }),
     );
   }
 }

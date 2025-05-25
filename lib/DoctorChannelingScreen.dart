@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:skincare_app/shared_widgets.dart';
-// Add this import for your booking screen
-import 'package:skincare_app/BookAppointment.dart';
 
 class DoctorChannelingScreen extends StatelessWidget {
   const DoctorChannelingScreen({super.key});
@@ -19,8 +17,7 @@ class DoctorChannelingScreen extends StatelessWidget {
               child: SingleChildScrollView(
                 child: Column(
                   children: [
-                    // ... Keep previous widgets (SearchBar, Image, etc.) ...
-                       // Search Bar
+                    // Search Bar
                     Padding(
                       padding: const EdgeInsets.all(20.0),
                       child: SearchBar(
@@ -65,21 +62,16 @@ class DoctorChannelingScreen extends StatelessWidget {
                         ),
                       ),
                     ),
+
                     // Horizontal Scroll Dermatologist Cards
                     SizedBox(
-                      height: 320, // Increased height for button
+                      height: 300, // Adjust based on your needs
                       child: ListView.separated(
                         scrollDirection: Axis.horizontal,
                         padding: const EdgeInsets.all(20),
-                        itemCount: 4, // Now 4 doctors
+                        itemCount: 5, // Replace with your actual item count
                         separatorBuilder: (context, index) => const SizedBox(width: 20),
-                        itemBuilder: (context, index) => DermatologistCard(
-                          doctorName: _doctors[index]['name'],
-                          location: _doctors[index]['location'],
-                          rating: _doctors[index]['rating'],
-                          imagePath: _doctors[index]['image'],
-                          description: _doctors[index]['description'],
-                        ),
+                        itemBuilder: (context, index) => DermatologistCard(),
                       ),
                     ),
                   ],
@@ -91,163 +83,93 @@ class DoctorChannelingScreen extends StatelessWidget {
       ),
     );
   }
-
-  // Doctor data
-  final List<Map<String, dynamic>> _doctors = [
-    {
-      'name': 'Dr. Adithya',
-      'location': 'Colombo, Sri Lanka',
-      'rating': '4.9',
-      'image': 'assets/images/doc1.png',
-      'description': 'Board-certified dermatologist specializing in skin disorders. Expert in cosmetic dermatology.',
-    },
-    {
-      'name': 'Dr. Samantha',
-      'location': 'Kandy, Sri Lanka',
-      'rating': '4.7',
-      'image': 'assets/images/doc2.png',
-      'description': 'Pediatric dermatology specialist with 10+ years experience in child skin care.',
-    },
-    {
-      'name': 'Dr. Rajesh',
-      'location': 'Galle, Sri Lanka',
-      'rating': '4.8',
-      'image': 'assets/images/doc3.png',
-      'description': 'Acne treatment expert and laser therapy specialist. FDA-approved procedures.',
-    },
-    {
-      'name': 'Dr. Anjali',
-      'location': 'Jaffna, Sri Lanka',
-      'rating': '4.6',
-      'image': 'assets/images/Doctorimage.png',
-      'description': 'Hair and scalp disorder specialist. Trichology certified practitioner.',
-    },
-  ];
 }
 
 class DermatologistCard extends StatelessWidget {
-  final String doctorName;
-  final String location;
-  final String rating;
-  final String imagePath;
-  final String description;
-
-  const DermatologistCard({
-    super.key,
-    required this.doctorName,
-    required this.location,
-    required this.rating,
-    required this.imagePath,
-    required this.description,
-  });
+  const DermatologistCard({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => _navigateToBooking(context),
-      behavior: HitTestBehavior.opaque,
-      child: Container(
-        width: 280,
-        decoration: BoxDecoration(
-          color: const Color(0xFF004237),
-          borderRadius: BorderRadius.circular(15),
-        ),
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Top Row with Avatar and Rating
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                CircleAvatar(
-                  radius: 30,
-                  backgroundImage: AssetImage(imagePath),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.amber,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.star, color: Colors.white, size: 16),
-                      const SizedBox(width: 4),
-                      Text(
-                        rating,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
+    return Container(
+      width: 280,
+      decoration: BoxDecoration(
+        color: const Color(0xFF004237),
+        borderRadius: BorderRadius.circular(15),
+      ),
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Top Row with Avatar and Rating
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // Doctor Avatar
+              const CircleAvatar(
+                radius: 30,
+                backgroundImage: AssetImage('assets/images/doc1.png'), // Add your image
+              ),
+              
+              // Rating
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.amber,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.star, color: Colors.white, size: 16),
+                    SizedBox(width: 4),
+                    Text(
+                      '4.9',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
-              ],
-            ),
+            ],
+          ),
 
-            const SizedBox(height: 20),
-            Text(
-              doctorName,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+          const SizedBox(height: 20),
+
+          // Doctor Name
+          const Text(
+            'Dr. Adithya',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
             ),
-            Text(
-              location,
-              style: const TextStyle(
-                color: Colors.white70,
+          ),
+
+          // Location
+          const Text(
+            'Colombo, Sri Lanka',
+            style: TextStyle(
+              color: Colors.white70,
+              fontSize: 14,
+            ),
+          ),
+
+          const SizedBox(height: 15),
+
+          // Description
+          const Expanded(
+            child: Text(
+              'Board-certified dermatologist specializing in skin, hair, and nail disorders. Expert in both medical and cosmetic dermatology.',
+              style: TextStyle(
+                color: Colors.white,
                 fontSize: 14,
               ),
-            ),
-            const SizedBox(height: 15),
-            Text(
-              description,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 14,
-              ),
-              maxLines: 3,
+              maxLines: 4,
               overflow: TextOverflow.ellipsis,
             ),
-            const Spacer(),
-            Center(
-              child: TextButton(
-                onPressed: () => _navigateToBooking(context),
-                style: TextButton.styleFrom(
-                  backgroundColor: const Color(0xFFE97171),
-                  padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                ),
-                child: const Text(
-                  'Book Appointment',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _navigateToBooking(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => BookAppointmentScreen(
-          doctorName: doctorName,
-          doctorImage: imagePath,
-          doctorSpecialty: description,
-        ),
+          ),
+        ],
       ),
     );
   }

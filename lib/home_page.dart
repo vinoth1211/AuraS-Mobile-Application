@@ -227,67 +227,6 @@ Widget _buildReminderBanner(BuildContext context) {
     );
   }
 
-  // Widget _buildLatestUpdatesSection(BuildContext context) {
-  //   return Column(
-  //     crossAxisAlignment: CrossAxisAlignment.start,
-  //     children: [
-  //       const Padding(
-  //         padding: EdgeInsets.all(16),
-  //         child: Text(
-  //           'Latest Skincare Updates',
-  //           style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
-  //         ),
-  //       ),
-  //       SizedBox(
-  //         height: 300,
-  //         child: ListView(
-  //           scrollDirection: Axis.horizontal,
-  //           padding: const EdgeInsets.symmetric(horizontal: 16),
-  //           children: [
-  //             _buildUpdateCard(
-  //               context: context,
-  //               title: 'Smart SPF Protection',
-  //               backgroundColor: const Color(0xFF654321),
-  //               images: [
-  //                 'assets/images/image1.png', // Main image
-  //                 'assets/images/image2.png', // Top small image
-  //                 'assets/images/image3.png', // Bottom small image
-  //               ],
-  //               description:
-  //                   'Sunscreens are evolving to offer broader protection against UV rays, blue light, and pollution. Innovations include powder and mist SPF formats that are easy to apply and reapply throughout the day.',
-  //             ),
-  //             const SizedBox(width: 12),
-  //             _buildUpdateCard(
-  //               context: context,
-  //               title: 'Neurocosmetics',
-  //               backgroundColor: const Color(0xFF654321),
-  //               images: [
-  //                 'assets/images/image4.png', // Main image
-  //                 'assets/images/image5.png', // Top small image
-  //                 'assets/images/image6.png', // Bottom small image
-  //               ],
-  //               description:
-  //                   'A new frontier between skin health. Products target connections between environmental factors and neurophysiology-induced skin conditions.',
-  //             ),
-  //             const SizedBox(width: 12),
-  //             _buildUpdateCard(
-  //               context: context,
-  //               title: 'Microbiome Skincare',
-  //               backgroundColor: const Color(0xFF654321),
-  //               images: [
-  //                 'assets/images/image7.png', // Main image
-  //                 'assets/images/image8.png', // Top small image
-  //                 'assets/images/image9.png', // Bottom small image
-  //               ],
-  //               description:
-  //                   'Microbiome skincare targets the balance of good bacteria on the skin’s surface. Products with prebiotics, probiotics, and postbiotics help strengthen the skin barrier, reduce inflammation, and support a healthy, resilient complexion.',
-  //             ),
-  //           ],
-  //         ),
-  //       ),
-  //     ],
-  //   );
-  // }
 
   Widget _buildLatestUpdatesSection(BuildContext context) {
   return Column(

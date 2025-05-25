@@ -207,56 +207,56 @@ class HomePage extends StatelessWidget {
   //   );
   // }
 
-Widget _buildReminderBanner(BuildContext context) {
-  return InkWell(
-    onTap: () {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const AppointmentScreen()),
-      );
-    },
-    child: Container(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: Colors.grey[300],
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 24,
-            height: 24,
-            decoration: const BoxDecoration(
-              color: Color(0xFFFFCB05),
-              shape: BoxShape.circle,
-            ),
-            child: const Center(
-              child: Text(
-                '!',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
+  Widget _buildReminderBanner(BuildContext context) {
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const AppointmentScreen()),
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: Colors.grey[300],
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 24,
+              height: 24,
+              decoration: const BoxDecoration(
+                color: Color(0xFFFFCB05),
+                shape: BoxShape.circle,
+              ),
+              child: const Center(
+                child: Text(
+                  '!',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),
-          ),
-          const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: const [
-              Text('Reminders', style: TextStyle(color: Color(0xFF666666))),
-              Text('1 Appointment', style: TextStyle(color: Color(0xFF666666))),
-            ],
-          ),
-        ],
+            const SizedBox(width: 12),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: const [
+                Text('Reminders', style: TextStyle(color: Color(0xFF666666))),
+                Text(
+                  '1 Appointment',
+                  style: TextStyle(color: Color(0xFF666666)),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
-    ),
-  );
-}
-
-
-
+    );
+  }
 
   // Widget _buildFeaturesSection() {
   //   return Column(
@@ -316,82 +316,91 @@ Widget _buildReminderBanner(BuildContext context) {
   // }
 
   Widget _buildFeaturesSection(BuildContext context) {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      const Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16),
-        child: Text(
-          'Our features',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
-        ),
-      ),
-      const SizedBox(height: 16),
-      Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Row(
-          children: [
-            Expanded(
-              child: InkWell(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const AIAnalysisScreen()),
-                  );
-                },
-                child: _buildFeatureCard(
-                  color: const Color(0xFFFFF9E6),
-                  iconColor: const Color(0xFFFFCB05),
-                  icon: Icons.grid_view,
-                  title: 'AI Skin Analysis',
-                  description: 'AI skin analysis uses advanced image processing to detect skin concerns like acne, wrinkles, and dryness. It provides quick, personalized feedback and care suggestions based on your skin\'s condition.',
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: InkWell(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const ChatBotScreen()),
-                  );
-                },
-                child: _buildFeatureCard(
-                  color: const Color(0xFFE0F5F0),
-                  iconColor: const Color(0xFFA0E0D0),
-                  icon: Icons.chat_bubble_outline_sharp,
-                  title: 'AI Chatbot',
-                  description: 'A smart virtual assistant that uses AI to understand and respond to user queries in real time',
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-      const SizedBox(height: 12),
-      Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: InkWell(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const DoctorChannelingScreen()),
-            );
-          },
-          child: _buildFeatureCard(
-            color: Colors.grey[200]!,
-            iconColor: Colors.black,
-            icon: Icons.medical_services_outlined,
-            title: 'Doctor Channelling',
-            description: 'Doctor channelling is a simple way to book appointments with doctors through a phone or online. It helps patients find the right doctor and choose a convenient time without waiting in long lines.',
-            isFullWidth: true,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16),
+          child: Text(
+            'Our features',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
           ),
         ),
-      ),
-    ],
-  );
-}
+        const SizedBox(height: 16),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            children: [
+              Expanded(
+                child: InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const AISkinAnalysisScreen(),
+                      ),
+                    );
+                  },
+                  child: _buildFeatureCard(
+                    color: const Color(0xFFFFF9E6),
+                    iconColor: const Color(0xFFFFCB05),
+                    icon: Icons.grid_view,
+                    title: 'AI Skin Analysis',
+                    description:
+                        'AI skin analysis uses advanced image processing to detect skin concerns like acne, wrinkles, and dryness. It provides quick, personalized feedback and care suggestions based on your skin\'s condition.',
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const ChatBotScreen(),
+                      ),
+                    );
+                  },
+                  child: _buildFeatureCard(
+                    color: const Color(0xFFE0F5F0),
+                    iconColor: const Color(0xFFA0E0D0),
+                    icon: Icons.chat_bubble_outline_sharp,
+                    title: 'AI Chatbot',
+                    description:
+                        'A smart virtual assistant that uses AI to understand and respond to user queries in real time',
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: InkWell(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const DoctorChannelingScreen(),
+                ),
+              );
+            },
+            child: _buildFeatureCard(
+              color: Colors.grey[200]!,
+              iconColor: Colors.black,
+              icon: Icons.medical_services_outlined,
+              title: 'Doctor Channelling',
+              description:
+                  'Doctor channelling is a simple way to book appointments with doctors through a phone or online. It helps patients find the right doctor and choose a convenient time without waiting in long lines.',
+              isFullWidth: true,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 
   Widget _buildFeatureCard({
     required Color color,

@@ -56,11 +56,8 @@ class CustomHeader extends StatelessWidget {
 
 class CustomNavigationBar extends StatelessWidget {
   final String activeRoute;
-  
-  const CustomNavigationBar({
-    super.key,
-    required this.activeRoute
-  });
+
+  const CustomNavigationBar({super.key, required this.activeRoute});
 
   @override
   Widget build(BuildContext context) {
@@ -77,50 +74,62 @@ class CustomNavigationBar extends StatelessWidget {
             _NavItem(
               title: 'Home',
               isActive: activeRoute == 'Home',
-              onTap: () => Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => const HomePage()),
-              ),
+              onTap:
+                  () => Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => const HomePage()),
+                  ),
             ),
             _NavItem(
               title: 'AI Analysis',
               isActive: activeRoute == 'AI Analysis',
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const AIAnalysisScreen()),
-              ),
+              onTap:
+                  () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AISkinAnalysisScreen(),
+                    ),
+                  ),
             ),
             _NavItem(
               title: 'Chat Bot',
               isActive: activeRoute == 'Chat Bot',
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const ChatBotScreen()),
-              ),
+              onTap:
+                  () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ChatBotScreen(),
+                    ),
+                  ),
             ),
             _NavItem(
               title: 'Doctor Channelling',
               isActive: activeRoute == 'Doctor Channelling',
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const DoctorChannelingScreen()),
-              ),
+              onTap:
+                  () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const DoctorChannelingScreen(),
+                    ),
+                  ),
             ),
             _NavItem(
               title: 'Blog',
               isActive: activeRoute == 'Blog',
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const BlogScreen()),
-              ),
+              onTap:
+                  () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const BlogScreen()),
+                  ),
             ),
             _NavItem(
               title: 'FAQ',
               isActive: activeRoute == 'FAQ',
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const FAQScreen()),
-              ),
+              onTap:
+                  () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const FAQScreen()),
+                  ),
             ),
             const SizedBox(width: 16),
           ],
@@ -158,7 +167,8 @@ class _NavItem extends StatelessWidget {
                     title,
                     style: TextStyle(
                       fontSize: 14,
-                      fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
+                      fontWeight:
+                          isActive ? FontWeight.w600 : FontWeight.normal,
                       color: isActive ? Colors.black : Colors.grey,
                     ),
                   ),

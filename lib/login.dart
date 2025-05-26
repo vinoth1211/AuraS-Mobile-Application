@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'signup.dart';
 import 'home_page.dart';
 
@@ -13,6 +14,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _isPasswordVisible = false;
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -40,23 +42,25 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 24),
                 const Text(
-                  'Your Skin Journey Start Here!',
+                  'Your Skin Journey Starts Here!',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                 ),
                 const SizedBox(height: 40),
-                // Email Field
                 TextField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
-                  decoration: const InputDecoration(hintText: 'Email'),
+                  decoration: const InputDecoration(
+                    hintText: 'Email',
+                    prefixIcon: Icon(Icons.email),
+                  ),
                 ),
                 const SizedBox(height: 16),
-                // Password Field
                 TextField(
                   controller: _passwordController,
                   obscureText: !_isPasswordVisible,
                   decoration: InputDecoration(
                     hintText: 'Password',
+                    prefixIcon: const Icon(Icons.lock),
                     suffixIcon: IconButton(
                       icon: Icon(
                         _isPasswordVisible
@@ -64,55 +68,47 @@ class _LoginScreenState extends State<LoginScreen> {
                             : Icons.visibility,
                         color: Colors.grey,
                       ),
-                      onPressed: () {
-                        setState(() {
-                          _isPasswordVisible = !_isPasswordVisible;
-                        });
-                      },
+                      onPressed: () =>
+                          setState(() => _isPasswordVisible = !_isPasswordVisible),
                     ),
                   ),
                 ),
                 const SizedBox(height: 24),
-                // Sign In Button
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const HomePage()),
-                    );
-                  },
-                  child: const Text('Sign In'),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _isLoading ? null : _handleSignIn,
+                    child: _isLoading
+                        ? const CircularProgressIndicator()
+                        : const Text('Sign In'),
+                  ),
                 ),
                 const SizedBox(height: 8),
-                // Forgot Password
                 TextButton(
                   onPressed: _handleForgotPassword,
-                  child: Text(
-                    'Forgot Password',
-                    style: TextStyle(color: Theme.of(context).primaryColor),
+                  child: const Text(
+                    'Forgot Password?',
+                    style: TextStyle(color: Colors.black54),
                   ),
                 ),
                 const SizedBox(height: 16),
-                // Sign Up
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const Text(
-                      'don\'t have an account?',
+                      'Don\'t have an account?',
                       style: TextStyle(color: Colors.black54),
                     ),
                     TextButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const SignupPage(),
-                          ),
-                        );
-                      },
-                      child: Text(
+                      onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const SignupPage(),
+                        ),
+                      ),
+                      child: const Text(
                         'Sign up here',
-                        style: TextStyle(color: Theme.of(context).primaryColor),
+                        style: TextStyle(color: Colors.blue),
                       ),
                     ),
                   ],
@@ -130,68 +126,77 @@ class _LoginScreenState extends State<LoginScreen> {
       height: 150,
       width: 150,
       child: Image.asset(
-        'assets/images/logo.png', // Your logo image path
+        'assets/images/logo.png',
         fit: BoxFit.contain,
       ),
     );
   }
 
-  void _handleSignIn() {
-    // TODO: Implement sign in logic
+  Future<void> _handleSignIn() async {
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill in all fields')),
-      );
+      _showErrorSnackBar('Please fill in all fields');
       return;
     }
 
-    // Navigate to home page after successful login
-    // Navigator.pushReplacementNamed(context, '/home');
+    setState(() => _isLoading = true);
+    
+    try {
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+      
+      if (!mounted) return;
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const HomePage()),
+      );
+    } on FirebaseAuthException catch (e) {
+      String message = 'An error occurred';
+      if (e.code == 'user-not-found') {
+        message = 'No user found with this email';
+      } else if (e.code == 'wrong-password') {
+        message = 'Incorrect password';
+      } else if (e.code == 'invalid-email') {
+        message = 'Invalid email format';
+      }
+      _showErrorSnackBar(message);
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
-  void _handleForgotPassword() {
-    // TODO: Implement forgot password logic
-    // Navigator.pushNamed(context, '/forgot-password');
-  }
-
-  void _handleSignUp() {
-    // TODO: Implement sign up navigation
-    // Navigator.pushNamed(context, '/signup');
-  }
-}
-
-// Custom painter for creating the logo's triangular shapes
-class TrianglePainter extends CustomPainter {
-  final Color color;
-  final bool isTopTriangle;
-
-  TrianglePainter({required this.color, required this.isTopTriangle});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final Paint paint =
-        Paint()
-          ..color = color
-          ..style = PaintingStyle.fill;
-
-    final Path path = Path();
-
-    if (isTopTriangle) {
-      // Top triangle (pointing down)
-      path.moveTo(size.width / 2, 0);
-      path.lineTo(0, size.height * 0.5);
-      path.lineTo(size.width, size.height * 0.5);
-    } else {
-      // Bottom triangle (pointing up)
-      path.moveTo(0, size.height * 0.5);
-      path.lineTo(size.width, size.height * 0.5);
-      path.lineTo(size.width / 2, size.height);
+  Future<void> _handleForgotPassword() async {
+    if (_emailController.text.isEmpty) {
+      _showErrorSnackBar('Please enter your email');
+      return;
     }
 
-    path.close();
-    canvas.drawPath(path, paint);
+    try {
+      await FirebaseAuth.instance.sendPasswordResetEmail(
+        email: _emailController.text.trim(),
+      );
+      _showSuccessSnackBar('Password reset email sent');
+    } on FirebaseAuthException catch (e) {
+      _showErrorSnackBar(e.message ?? 'Error sending reset email');
+    }
   }
 
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+
+  void _showSuccessSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.green,
+      ),
+    );
+  }
 }

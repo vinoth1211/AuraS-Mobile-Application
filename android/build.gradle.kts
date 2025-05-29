@@ -23,3 +23,18 @@ tasks.register<Delete>("clean") {
     delete(rootProject.layout.buildDirectory)
 }
 
+// plugins {
+//     // Keep plugins here
+//     id("com.google.gms.google-services") version "4.4.0" apply false
+// }
+
+// allprojects {
+//     repositories {
+//         google()
+//         mavenCentral()
+//     }
+// }
+
+// tasks.register<Delete>("clean") {
+//     delete(rootProject.layout.buildDirectory)
+// }

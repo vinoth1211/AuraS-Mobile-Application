@@ -96,7 +96,7 @@
 //           BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 8),
 //         ],
 //       ),
-    
+
 //       child: Column(
 //         mainAxisSize: MainAxisSize.min,
 //         children: [
@@ -330,8 +330,6 @@
 //   }
 // }
 
-
-
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:skincare_app/login.dart';
@@ -342,8 +340,11 @@ import 'package:skincare_app/DoctorChannelingScreen.dart';
 import 'package:skincare_app/FAQScreen.dart';
 import 'package:skincare_app/home_page.dart';
 
-class CustomHeader extends StatefulWidget {
+class CustomHeader extends StatefulWidget implements PreferredSizeWidget {
   const CustomHeader({super.key});
+
+  @override
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 
   @override
   State<CustomHeader> createState() => _CustomHeaderState();
@@ -403,23 +404,24 @@ class _CustomHeaderState extends State<CustomHeader> {
     final position = renderBox.localToGlobal(Offset.zero);
 
     _menuOverlayEntry = OverlayEntry(
-      builder: (context) => GestureDetector(
-        onTap: _removeMenuOverlay,
-        behavior: HitTestBehavior.translucent,
-        child: Stack(
-          children: [
-            Positioned(
-              top: position.dy + renderBox.size.height,
-              right: 16,
-              child: Material(
-                elevation: 4,
-                borderRadius: BorderRadius.circular(8),
-                child: _buildMenuContent(),
-              ),
+      builder:
+          (context) => GestureDetector(
+            onTap: _removeMenuOverlay,
+            behavior: HitTestBehavior.translucent,
+            child: Stack(
+              children: [
+                Positioned(
+                  top: position.dy + renderBox.size.height,
+                  right: 16,
+                  child: Material(
+                    elevation: 4,
+                    borderRadius: BorderRadius.circular(8),
+                    child: _buildMenuContent(),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
     );
 
     Overlay.of(context).insert(_menuOverlayEntry!);
@@ -440,7 +442,10 @@ class _CustomHeaderState extends State<CustomHeader> {
         children: [
           _MenuButton('Home', () => _handleMenuTap('Home')),
           _MenuButton('ChatBot', () => _handleMenuTap('ChatBot')),
-          _MenuButton('My Appointments', () => _handleMenuTap('My Appointments')),
+          _MenuButton(
+            'My Appointments',
+            () => _handleMenuTap('My Appointments'),
+          ),
           _MenuButton('FAQ', () => _handleMenuTap('FAQ')),
           _MenuButton('About Us', () => _handleMenuTap('About Us')),
         ],
@@ -463,9 +468,9 @@ class _CustomHeaderState extends State<CustomHeader> {
         (route) => false,
       );
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error signing out')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Error signing out')));
     }
   }
 
@@ -474,23 +479,24 @@ class _CustomHeaderState extends State<CustomHeader> {
     final position = renderBox.localToGlobal(Offset.zero);
 
     _profileOverlayEntry = OverlayEntry(
-      builder: (context) => GestureDetector(
-        onTap: _removeProfileOverlay,
-        behavior: HitTestBehavior.translucent,
-        child: Stack(
-          children: [
-            Positioned(
-              top: position.dy + renderBox.size.height,
-              right: 16,
-              child: Material(
-                elevation: 4,
-                borderRadius: BorderRadius.circular(8),
-                child: _buildProfileMenu(),
-              ),
+      builder:
+          (context) => GestureDetector(
+            onTap: _removeProfileOverlay,
+            behavior: HitTestBehavior.translucent,
+            child: Stack(
+              children: [
+                Positioned(
+                  top: position.dy + renderBox.size.height,
+                  right: 16,
+                  child: Material(
+                    elevation: 4,
+                    borderRadius: BorderRadius.circular(8),
+                    child: _buildProfileMenu(),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
     );
 
     Overlay.of(context).insert(_profileOverlayEntry!);
@@ -508,9 +514,7 @@ class _CustomHeaderState extends State<CustomHeader> {
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        children: [
-          _MenuButton('Sign Out', _handleSignOut),
-        ],
+        children: [_MenuButton('Sign Out', _handleSignOut)],
       ),
     );
   }
@@ -561,25 +565,33 @@ class _CustomHeaderState extends State<CustomHeader> {
                 children: [
                   IconButton(
                     icon: const Icon(Icons.menu, color: Color(0xFFF44336)),
-                    onPressed: () => _menuOverlayEntry == null
-                        ? _showMenuOverlay(context)
-                        : _removeMenuOverlay(),
+                    onPressed:
+                        () =>
+                            _menuOverlayEntry == null
+                                ? _showMenuOverlay(context)
+                                : _removeMenuOverlay(),
                   ),
                   CompositedTransformTarget(
                     link: _profileLayerLink,
                     child: InkWell(
-                      onTap: () => _profileOverlayEntry == null
-                          ? _showProfileOverlay(context)
-                          : _removeProfileOverlay(),
+                      onTap:
+                          () =>
+                              _profileOverlayEntry == null
+                                  ? _showProfileOverlay(context)
+                                  : _removeProfileOverlay(),
                       child: CircleAvatar(
                         radius: 20,
-                        backgroundImage: _currentUser?.photoURL != null
-                            ? NetworkImage(_currentUser!.photoURL!)
-                            : const AssetImage('assets/images/default_profile.jpg')
-                                as ImageProvider,
-                        child: _currentUser?.photoURL == null
-                            ? const Icon(Icons.person, color: Colors.white)
-                            : null,
+                        backgroundImage:
+                            _currentUser?.photoURL != null
+                                ? NetworkImage(_currentUser!.photoURL!)
+                                : const AssetImage(
+                                      'assets/images/default_profile.jpg',
+                                    )
+                                    as ImageProvider,
+                        child:
+                            _currentUser?.photoURL == null
+                                ? const Icon(Icons.person, color: Colors.white)
+                                : null,
                       ),
                     ),
                   ),
@@ -640,56 +652,62 @@ class CustomNavigationBar extends StatelessWidget {
             _NavItem(
               title: 'Home',
               isActive: activeRoute == 'Home',
-              onTap: () => Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => const HomePage()),
-              ),
+              onTap:
+                  () => Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => const HomePage()),
+                  ),
             ),
             _NavItem(
               title: 'AI Analysis',
               isActive: activeRoute == 'AI Analysis',
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const AISkinAnalysisScreen(),
-                ),
-              ),
+              onTap:
+                  () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AISkinAnalysisScreen(),
+                    ),
+                  ),
             ),
             _NavItem(
               title: 'Chat Bot',
               isActive: activeRoute == 'Chat Bot',
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const ChatBotScreen(),
-                ),
-              ),
+              onTap:
+                  () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ChatBotScreen(),
+                    ),
+                  ),
             ),
             _NavItem(
               title: 'Doctor Channelling',
               isActive: activeRoute == 'Doctor Channelling',
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const DoctorChannelingScreen(),
-                ),
-              ),
+              onTap:
+                  () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const DoctorChannelingScreen(),
+                    ),
+                  ),
             ),
             _NavItem(
               title: 'Blog',
               isActive: activeRoute == 'Blog',
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const BlogScreen()),
-              ),
+              onTap:
+                  () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const BlogScreen()),
+                  ),
             ),
             _NavItem(
               title: 'FAQ',
               isActive: activeRoute == 'FAQ',
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const FAQScreen()),
-              ),
+              onTap:
+                  () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const FAQScreen()),
+                  ),
             ),
             const SizedBox(width: 16),
           ],
@@ -726,7 +744,8 @@ class _NavItem extends StatelessWidget {
                     title,
                     style: TextStyle(
                       fontSize: 14,
-                      fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
+                      fontWeight:
+                          isActive ? FontWeight.w600 : FontWeight.normal,
                       color: isActive ? Colors.black : Colors.grey,
                     ),
                   ),

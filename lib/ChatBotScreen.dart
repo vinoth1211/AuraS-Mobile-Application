@@ -33,11 +33,11 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
 
   void _initializeModels() {
     _textModel = GenerativeModel(
-      model: 'models/gemini-1.5-pro',
+      model: 'models/gemini-2.0-flash',
       apiKey: apiKey,
     );
     _visionModel = GenerativeModel(
-      model: 'models/gemini-1.5-pro',
+      model: 'models/gemini-2.0-flash',
       apiKey: apiKey,
     );
   }

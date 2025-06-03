@@ -334,16 +334,26 @@
 
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:skincare_app/login.dart';
+import 'package:skincare_app/user%20authentication/login.dart';
 import 'package:skincare_app/AIAnalysisScreen.dart';
 import 'package:skincare_app/BlogScreen.dart';
-import 'package:skincare_app/ChatBotScreen.dart';
+import 'package:skincare_app/chatbot/ChatBotScreen.dart';
 import 'package:skincare_app/DoctorChannelingScreen.dart';
 import 'package:skincare_app/FAQScreen.dart';
 import 'package:skincare_app/home_page.dart';
 
-class CustomHeader extends StatefulWidget {
+// class CustomHeader extends StatefulWidget {
+//   const CustomHeader({super.key});
+
+//   @override
+//   State<CustomHeader> createState() => _CustomHeaderState();
+// }
+
+class CustomHeader extends StatefulWidget implements PreferredSizeWidget {
   const CustomHeader({super.key});
+
+  @override
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 
   @override
   State<CustomHeader> createState() => _CustomHeaderState();
@@ -527,70 +537,154 @@ class _CustomHeaderState extends State<CustomHeader> {
     super.dispose();
   }
 
+  // @override
+  // Widget build(BuildContext context) {
+  //   return CompositedTransformTarget(
+  //     link: _layerLink,
+  //     child: CompositedTransformTarget(
+  //       link: _profileLayerLink,
+  //       child: Container(
+  //         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+  //         child: Row(
+  //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //           children: [
+  //             Row(
+  //               children: [
+  //                 SizedBox(
+  //                   width: 50,
+  //                   height: 50,
+  //                   child: ClipOval(
+  //                     child: Image.asset(
+  //                       'assets/images/logo.png',
+  //                       fit: BoxFit.cover,
+  //                     ),
+  //                   ),
+  //                 ),
+  //                 const SizedBox(width: 8),
+  //                 const Text(
+  //                   'AuraS',
+  //                   style: TextStyle(fontSize: 30, fontWeight: FontWeight.w600),
+  //                 ),
+  //               ],
+  //             ),
+  //             Row(
+  //               children: [
+  //                 IconButton(
+  //                   icon: const Icon(Icons.menu, color: Color(0xFFF44336)),
+  //                   onPressed: () => _menuOverlayEntry == null
+  //                       ? _showMenuOverlay(context)
+  //                       : _removeMenuOverlay(),
+  //                 ),
+  //                 CompositedTransformTarget(
+  //                   link: _profileLayerLink,
+  //                   child: InkWell(
+  //                     onTap: () => _profileOverlayEntry == null
+  //                         ? _showProfileOverlay(context)
+  //                         : _removeProfileOverlay(),
+  //                     child: CircleAvatar(
+  //                       radius: 20,
+  //                       backgroundImage: _currentUser?.photoURL != null
+  //                           ? NetworkImage(_currentUser!.photoURL!)
+  //                           : const AssetImage('assets/images/default_profile.jpg')
+  //                               as ImageProvider,
+  //                       child: _currentUser?.photoURL == null
+  //                           ? const Icon(Icons.person, color: Colors.white)
+  //                           : null,
+  //                     ),
+  //                   ),
+  //                 ),
+  //               ],
+  //             ),
+  //           ],
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
+
+
   @override
   Widget build(BuildContext context) {
-    return CompositedTransformTarget(
-      link: _layerLink,
+    return PreferredSize(
+      preferredSize: widget.preferredSize,
       child: CompositedTransformTarget(
-        link: _profileLayerLink,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  SizedBox(
-                    width: 50,
-                    height: 50,
-                    child: ClipOval(
-                      child: Image.asset(
-                        'assets/images/logo.png',
-                        fit: BoxFit.cover,
+        link: _layerLink,
+        child: CompositedTransformTarget(
+          link: _profileLayerLink,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 4,
+                  offset: Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    SizedBox(
+                      width: 50,
+                      height: 50,
+                      child: ClipOval(
+                        child: Image.asset(
+                          'assets/images/logo.png',
+                          fit: BoxFit.cover,
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  const Text(
-                    'AuraS',
-                    style: TextStyle(fontSize: 30, fontWeight: FontWeight.w600),
-                  ),
-                ],
-              ),
-              Row(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.menu, color: Color(0xFFF44336)),
-                    onPressed: () => _menuOverlayEntry == null
-                        ? _showMenuOverlay(context)
-                        : _removeMenuOverlay(),
-                  ),
-                  CompositedTransformTarget(
-                    link: _profileLayerLink,
-                    child: InkWell(
-                      onTap: () => _profileOverlayEntry == null
-                          ? _showProfileOverlay(context)
-                          : _removeProfileOverlay(),
-                      child: CircleAvatar(
-                        radius: 20,
-                        backgroundImage: _currentUser?.photoURL != null
-                            ? NetworkImage(_currentUser!.photoURL!)
-                            : const AssetImage('assets/images/default_profile.jpg')
-                                as ImageProvider,
-                        child: _currentUser?.photoURL == null
-                            ? const Icon(Icons.person, color: Colors.white)
-                            : null,
+                    const SizedBox(width: 8),
+                    const Text(
+                      'AuraS',
+                      style: TextStyle(
+                        fontSize: 30,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ],
+                  ],
+                ),
+                Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.menu, color: Color(0xFFF44336)),
+                      onPressed: () => _menuOverlayEntry == null
+                          ? _showMenuOverlay(context)
+                          : _removeMenuOverlay(),
+                    ),
+                    CompositedTransformTarget(
+                      link: _profileLayerLink,
+                      child: InkWell(
+                        onTap: () => _profileOverlayEntry == null
+                            ? _showProfileOverlay(context)
+                            : _removeProfileOverlay(),
+                        child: CircleAvatar(
+                          radius: 20,
+                          backgroundImage: _currentUser?.photoURL != null
+                              ? NetworkImage(_currentUser!.photoURL!)
+                              : const AssetImage('assets/images/default_profile.jpg')
+                                  as ImageProvider,
+                          child: _currentUser?.photoURL == null
+                              ? const Icon(Icons.person, color: Colors.white)
+                              : null,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
+
+
 }
 
 class _MenuButton extends StatelessWidget {

@@ -161,12 +161,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:skincare_app/verify_email.dart';
-import 'firebase_options.dart';
-import 'login.dart';
-import 'signup.dart';
+import 'package:skincare_app/user%20authentication/verify_email.dart';
+import 'user authentication/WelcomeScreen.dart';
+import 'user authentication/firebase_options.dart';
+import 'user authentication/login.dart';
+import 'user authentication/signup.dart';
 import 'home_page.dart';
-import 'welcomescreen.dart';
+// import 'welcomescreen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

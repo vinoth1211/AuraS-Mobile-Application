@@ -488,7 +488,7 @@
 // }
 
 import 'package:flutter/material.dart';
-import 'package:skincare_app/shared_widgets.dart';
+import 'shared_widgets.dart';
 
 class AppointmentScreen extends StatelessWidget {
   const AppointmentScreen({super.key});

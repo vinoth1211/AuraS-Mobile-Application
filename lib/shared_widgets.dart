@@ -335,12 +335,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:skincare_app/user%20authentication/login.dart';
 import 'package:skincare_app/AIAnalysisScreen.dart';
 import 'package:skincare_app/BlogScreen.dart';
-import 'package:skincare_app/chatbot/ChatBotScreen.dart';
 import 'package:skincare_app/DoctorChannelingScreen.dart';
 import 'package:skincare_app/FAQScreen.dart';
 import 'package:skincare_app/home_page.dart';
+import 'package:skincare_app/ChatBotScreen.dart';
 
-class CustomHeader extends StatefulWidget {
+class CustomHeader extends StatefulWidget implements PreferredSizeWidget {
   const CustomHeader({super.key});
 
   @override
@@ -596,7 +596,6 @@ class _CustomHeaderState extends State<CustomHeader> {
   //   );
   // }
 
-
   @override
   Widget build(BuildContext context) {
     return CompositedTransformTarget(
@@ -631,25 +630,33 @@ class _CustomHeaderState extends State<CustomHeader> {
                 children: [
                   IconButton(
                     icon: const Icon(Icons.menu, color: Color(0xFFF44336)),
-                    onPressed: () => _menuOverlayEntry == null
-                        ? _showMenuOverlay(context)
-                        : _removeMenuOverlay(),
+                    onPressed:
+                        () =>
+                            _menuOverlayEntry == null
+                                ? _showMenuOverlay(context)
+                                : _removeMenuOverlay(),
                   ),
                   CompositedTransformTarget(
                     link: _profileLayerLink,
                     child: InkWell(
-                      onTap: () => _profileOverlayEntry == null
-                          ? _showProfileOverlay(context)
-                          : _removeProfileOverlay(),
+                      onTap:
+                          () =>
+                              _profileOverlayEntry == null
+                                  ? _showProfileOverlay(context)
+                                  : _removeProfileOverlay(),
                       child: CircleAvatar(
                         radius: 20,
-                        backgroundImage: _currentUser?.photoURL != null
-                            ? NetworkImage(_currentUser!.photoURL!)
-                            : const AssetImage('assets/images/default_profile.jpg')
-                                as ImageProvider,
-                        child: _currentUser?.photoURL == null
-                            ? const Icon(Icons.person, color: Colors.white)
-                            : null,
+                        backgroundImage:
+                            _currentUser?.photoURL != null
+                                ? NetworkImage(_currentUser!.photoURL!)
+                                : const AssetImage(
+                                      'assets/images/default_profile.jpg',
+                                    )
+                                    as ImageProvider,
+                        child:
+                            _currentUser?.photoURL == null
+                                ? const Icon(Icons.person, color: Colors.white)
+                                : null,
                       ),
                     ),
                   ),
@@ -661,8 +668,6 @@ class _CustomHeaderState extends State<CustomHeader> {
       ),
     );
   }
-
-
 }
 
 class _MenuButton extends StatelessWidget {

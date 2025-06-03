@@ -3,7 +3,7 @@ import 'package:skincare_app/AppointmentScreen.dart';
 import 'package:skincare_app/AIAnalysisScreen.dart';
 import 'package:skincare_app/BlogScreen.dart';
 // import 'package:skincare_app/BookAppointment.dart';
-import 'package:skincare_app/chatbot/ChatBotScreen.dart';
+import 'ChatBotScreen.dart';
 import 'package:skincare_app/DoctorChannelingScreen.dart';
 import 'package:skincare_app/shared_widgets.dart';
 

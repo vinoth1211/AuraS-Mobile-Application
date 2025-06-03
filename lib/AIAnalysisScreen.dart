@@ -3,8 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'shared_widgets.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'Ai_results.dart'; // Import the AIAnalysisResultScreen
 
 class AISkinAnalysisScreen extends StatefulWidget {
   const AISkinAnalysisScreen({super.key});
@@ -13,57 +12,165 @@ class AISkinAnalysisScreen extends StatefulWidget {
   State<AISkinAnalysisScreen> createState() => _AISkinAnalysisScreenState();
 }
 
-class _AISkinAnalysisScreenState extends State<AISkinAnalysisScreen> {
+class _AISkinAnalysisScreenState extends State<AISkinAnalysisScreen>
+    with TickerProviderStateMixin {
   final ImagePicker _picker = ImagePicker();
+  late AnimationController _animationController;
+  late AnimationController _buttonController;
+  late AnimationController _uploadController;
+
+  late Animation<double> _fadeAnimation;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _slideAnimation;
+  late Animation<double> _buttonScaleAnimation;
+  late Animation<double> _uploadPulseAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Initialize main animation controller
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 2000),
+      vsync: this,
+    );
+
+    // Initialize button animation controller
+    _buttonController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+
+    // Initialize upload section animation controller
+    _uploadController = AnimationController(
+      duration: const Duration(milliseconds: 2000),
+      vsync: this,
+    )..repeat(reverse: true);
+
+    // Create fade animation
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: const Interval(0.0, 0.6, curve: Curves.easeOut),
+    ));
+
+    // Create scale animation
+    _scaleAnimation = Tween<double>(
+      begin: 0.7,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: const Interval(0.2, 0.8, curve: Curves.elasticOut),
+    ));
+
+    // Create slide animation for upload section
+    _slideAnimation = Tween<double>(
+      begin: 50.0,
+      end: 0.0,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: const Interval(0.4, 1.0, curve: Curves.easeOutBack),
+    ));
+
+    // Button scale animation
+    _buttonScaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.95,
+    ).animate(CurvedAnimation(
+      parent: _buttonController,
+      curve: Curves.easeInOut,
+    ));
+
+    // Upload section pulse animation
+    _uploadPulseAnimation = Tween<double>(
+      begin: 0.95,
+      end: 1.05,
+    ).animate(CurvedAnimation(
+      parent: _uploadController,
+      curve: Curves.easeInOut,
+    ));
+
+    // Start the main animation
+    _animationController.forward();
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    _buttonController.dispose();
+    _uploadController.dispose();
+    super.dispose();
+  }
 
   void _showImageSourceOptions() {
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
       builder: (BuildContext context) {
-        return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: const Icon(Icons.camera_alt, color: Colors.red),
-                title: const Text("Take Photo"),
-                onTap: () async {
-                  Navigator.pop(context);
-                  final status = await Permission.camera.request();
-                  if (status.isGranted) {
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Handle bar
+                Container(
+                  margin: const EdgeInsets.only(top: 12, bottom: 20),
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                _AnimatedListTile(
+                  delay: 100,
+                  leading: const Icon(Icons.camera_alt, color: Colors.red),
+                  title: const Text("Take Photo"),
+                  onTap: () async {
+                    Navigator.pop(context);
+                    final status = await Permission.camera.request();
+                    if (status.isGranted) {
+                      final pickedFile = await _picker.pickImage(
+                        source: ImageSource.camera,
+                      );
+                      if (pickedFile != null) {
+                        _navigateToImageAnalysis(File(pickedFile.path));
+                      }
+                    }
+                  },
+                ),
+                _AnimatedListTile(
+                  delay: 200,
+                  leading: const Icon(Icons.photo_library, color: Colors.red),
+                  title: const Text("Upload Image"),
+                  onTap: () async {
+                    Navigator.pop(context);
                     final pickedFile = await _picker.pickImage(
-                      source: ImageSource.camera,
+                      source: ImageSource.gallery,
                     );
                     if (pickedFile != null) {
                       _navigateToImageAnalysis(File(pickedFile.path));
                     }
-                  }
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.photo_library, color: Colors.red),
-                title: const Text("Upload Image"),
-                onTap: () async {
-                  Navigator.pop(context);
-                  final pickedFile = await _picker.pickImage(
-                    source: ImageSource.gallery,
-                  );
-                  if (pickedFile != null) {
-                    _navigateToImageAnalysis(File(pickedFile.path));
-                  }
-                },
-              ),
-              const Divider(),
-              ListTile(
-                leading: const Icon(Icons.cancel, color: Colors.grey),
-                title: const Text("Cancel"),
-                onTap: () => Navigator.pop(context),
-              ),
-            ],
+                  },
+                ),
+                const Divider(),
+                _AnimatedListTile(
+                  delay: 300,
+                  leading: const Icon(Icons.cancel, color: Colors.grey),
+                  title: const Text("Cancel"),
+                  onTap: () => Navigator.pop(context),
+                ),
+                const SizedBox(height: 20),
+              ],
+            ),
           ),
         );
       },
@@ -74,7 +181,7 @@ class _AISkinAnalysisScreenState extends State<AISkinAnalysisScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ImageAnalysisScreen(image: image),
+        builder: (context) => AIAnalysisResultScreen(imageFile: image),
       ),
     );
   }
@@ -88,98 +195,173 @@ class _AISkinAnalysisScreenState extends State<AISkinAnalysisScreen> {
             const CustomHeader(),
             const CustomNavigationBar(activeRoute: 'AI Analysis'),
             const SizedBox(height: 12),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  Stack(
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(20),
-                        child: Image.asset(
-                          'assets/images/ai_face.png',
-                          width: double.infinity,
-                          height: 200,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                      Positioned(
-                        left: 0,
-                        bottom: 0,
-                        child: Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFFE2A7),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                "AI Skin Analysis",
-                                style: TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Image.asset(
-                                    'assets/images/ai_icon.png',
-                                    width: 24,
-                                    height: 24,
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    // Main image section with animations
+                    AnimatedBuilder(
+                      animation: _animationController,
+                      builder: (context, child) {
+                        return Transform.scale(
+                          scale: _scaleAnimation.value,
+                          child: Opacity(
+                            opacity: _fadeAnimation.value,
+                            child: Stack(
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(20),
+                                  child: Image.asset(
+                                    'assets/images/ai_face.png',
+                                    width: double.infinity,
+                                    height: 200,
+                                    fit: BoxFit.cover,
                                   ),
-                                  const SizedBox(width: 8),
-                                  const Expanded(
-                                    child: Text(
-                                      "AuraS scans, analyses, and alerts you to potential issues before they become serious",
-                                      style: TextStyle(fontSize: 13),
+                                ),
+                                Positioned(
+                                  left: 0,
+                                  bottom: 0,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(16),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFFFE2A7),
+                                      borderRadius: BorderRadius.circular(20),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.1),
+                                          blurRadius: 8,
+                                          offset: const Offset(0, 4),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        const Text(
+                                          "AI Skin Analysis",
+                                          style: TextStyle(
+                                            fontSize: 24,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Row(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            TweenAnimationBuilder<double>(
+                                              duration: const Duration(milliseconds: 1500),
+                                              tween: Tween(begin: 0.0, end: 1.0),
+                                              builder: (context, value, child) {
+                                                return Transform.rotate(
+                                                  angle: value * 2 * 3.14159,
+                                                  child: Image.asset(
+                                                    'assets/images/ai_icon.png',
+                                                    width: 24,
+                                                    height: 24,
+                                                  ),
+                                                );
+                                              },
+                                            ),
+                                            const SizedBox(width: 8),
+                                            const Expanded(
+                                              child: Text(
+                                                "AuraS scans, analyses, and alerts you to potential issues before they become serious",
+                                                style: TextStyle(fontSize: 13),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  GestureDetector(
-                    onTap: _showImageSourceOptions,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 24,
-                        horizontal: 16,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF5F5F5),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Column(
-                        children: [
-                          const CircleAvatar(
-                            radius: 24,
-                            backgroundColor: Color(0xFFDF4F5C),
-                            child: Icon(
-                              Icons.add,
-                              color: Colors.white,
-                              size: 30,
+                                ),
+                              ],
                             ),
                           ),
-                          const SizedBox(height: 12),
-                          const Text(
-                            "Upload a photo of your skin concern, and let our AI analyze it to provide personalized insights and possible solutions.",
-                            textAlign: TextAlign.center,
-                            style: TextStyle(fontSize: 14),
-                          ),
-                        ],
-                      ),
+                        );
+                      },
                     ),
-                  ),
-                ],
+
+                    const SizedBox(height: 16),
+
+                    // Upload section with animations
+                    AnimatedBuilder(
+                      animation: _animationController,
+                      builder: (context, child) {
+                        return Transform.translate(
+                          offset: Offset(0, _slideAnimation.value),
+                          child: Opacity(
+                            opacity: _fadeAnimation.value,
+                            child: AnimatedBuilder(
+                              animation: _uploadController,
+                              builder: (context, child) {
+                                return Transform.scale(
+                                  scale: _uploadPulseAnimation.value,
+                                  child: GestureDetector(
+                                    onTap: _showImageSourceOptions,
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 32,
+                                        horizontal: 16,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFF5F5F5),
+                                        borderRadius: BorderRadius.circular(16),
+                                        border: Border.all(
+                                          color: Colors.grey.withOpacity(0.3),
+                                          width: 2,
+                                        ),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withOpacity(0.05),
+                                            blurRadius: 8,
+                                            offset: const Offset(0, 4),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Column(
+                                        children: [
+                                          TweenAnimationBuilder<double>(
+                                            duration: const Duration(milliseconds: 1000),
+                                            tween: Tween(begin: 0.0, end: 1.0),
+                                            builder: (context, value, child) {
+                                              return Transform.scale(
+                                                scale: 0.8 + (0.2 * value),
+                                                child: const CircleAvatar(
+                                                  radius: 28,
+                                                  backgroundColor: Color(0xFFDF4F5C),
+                                                  child: Icon(
+                                                    Icons.add,
+                                                    color: Colors.white,
+                                                    size: 35,
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                          const SizedBox(height: 16),
+                                          const Text(
+                                            "Upload a photo of your skin concern, and let our AI analyze it to provide personalized insights and possible solutions.",
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              height: 1.4,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -187,180 +369,129 @@ class _AISkinAnalysisScreenState extends State<AISkinAnalysisScreen> {
       ),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: SizedBox(
-          width: double.infinity,
-          height: 50,
-          child: ElevatedButton(
-            onPressed: _showImageSourceOptions,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+        child: AnimatedBuilder(
+          animation: _animationController,
+          builder: (context, child) {
+            return Transform.translate(
+              offset: Offset(0, 100 * (1 - _fadeAnimation.value)),
+              child: Opacity(
+                opacity: _fadeAnimation.value,
+                child: AnimatedBuilder(
+                  animation: _buttonController,
+                  builder: (context, child) {
+                    return Transform.scale(
+                      scale: _buttonScaleAnimation.value,
+                      child: SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            _buttonController.forward().then((_) {
+                              _buttonController.reverse();
+                            });
+                            _showImageSourceOptions();
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 4,
+                          ),
+                          child: const Text(
+                            'Start Analysis',
+                            style: TextStyle(fontSize: 16, color: Colors.white),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
               ),
-            ),
-            child: const Text(
-              'Start Analysis',
-              style: TextStyle(fontSize: 16, color: Colors.white),
-            ),
-          ),
+            );
+          },
         ),
       ),
     );
   }
 }
 
-class ImageAnalysisScreen extends StatefulWidget {
-  final File image;
+class _AnimatedListTile extends StatefulWidget {
+  final Widget leading;
+  final Widget title;
+  final VoidCallback onTap;
+  final int delay;
 
-  const ImageAnalysisScreen({super.key, required this.image});
+  const _AnimatedListTile({
+    required this.leading,
+    required this.title,
+    required this.onTap,
+    required this.delay,
+  });
 
   @override
-  State<ImageAnalysisScreen> createState() => _ImageAnalysisScreenState();
+  State<_AnimatedListTile> createState() => _AnimatedListTileState();
 }
 
-class _ImageAnalysisScreenState extends State<ImageAnalysisScreen> {
-  bool _isAnalyzing = false;
-  String? _analysisResult;
-
-  // Replace with your actual Gemini API key
-  static const String _geminiApiKey = 'YOUR_GEMINI_API_KEY';
-  static const String _geminiApiUrl =
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent?key=$_geminiApiKey';
-
-  Future<void> _analyzeImage() async {
-    try {
-      setState(() {
-        _isAnalyzing = true;
-        _analysisResult = null;
-      });
-
-      // Read image bytes
-      final bytes = await widget.image.readAsBytes();
-      final base64Image = base64Encode(bytes);
-
-      // Prepare the request payload
-      final requestBody = jsonEncode({
-        "contents": [
-          {
-            "parts": [
-              {
-                "text":
-                    "Analyze this skin image and provide a detailed report about potential skin conditions, concerns, and recommendations. Focus on dermatological accuracy and provide actionable insights.",
-              },
-              {
-                "inline_data": {"mime_type": "image/jpeg", "data": base64Image},
-              },
-            ],
-          },
-        ],
-      });
-
-      // Make the API call
-      final response = await http.post(
-        Uri.parse(_geminiApiUrl),
-        headers: {'Content-Type': 'application/json'},
-        body: requestBody,
-      );
-
-      if (response.statusCode == 200) {
-        final responseData = jsonDecode(response.body);
-        setState(() {
-          _analysisResult =
-              responseData['candidates'][0]['content']['parts'][0]['text'];
-        });
-      } else {
-        throw Exception('Failed to analyze image: ${response.statusCode}');
-      }
-    } catch (e) {
-      debugPrint('Error analyzing image: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Failed to analyze image. Please try again.'),
-        ),
-      );
-    } finally {
-      setState(() {
-        _isAnalyzing = false;
-      });
-    }
-  }
+class _AnimatedListTileState extends State<_AnimatedListTile>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _slideAnimation;
+  late Animation<double> _fadeAnimation;
 
   @override
   void initState() {
     super.initState();
-    // Start analysis automatically when screen loads
-    _analyzeImage();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 600),
+      vsync: this,
+    );
+
+    _slideAnimation = Tween<double>(
+      begin: 50.0,
+      end: 0.0,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOutBack,
+    ));
+
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOut,
+    ));
+
+    // Start animation with delay
+    Future.delayed(Duration(milliseconds: widget.delay), () {
+      if (mounted) _controller.forward();
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Skin Analysis'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Display the selected image
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Image.file(widget.image, height: 300, fit: BoxFit.cover),
-              ),
-              const SizedBox(height: 20),
-
-              // Analysis status/result
-              if (_isAnalyzing)
-                const Column(
-                  children: [
-                    SizedBox(height: 20),
-                    CircularProgressIndicator(),
-                    SizedBox(height: 10),
-                    Text(
-                      'Analyzing your skin...',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 16),
-                    ),
-                  ],
-                )
-              else if (_analysisResult != null)
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Analysis Results:',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(_analysisResult!),
-                  ],
-                ),
-
-              // Retry button if analysis failed
-              if (!_isAnalyzing && _analysisResult == null)
-                Column(
-                  children: [
-                    const Text('Analysis failed'),
-                    const SizedBox(height: 10),
-                    ElevatedButton(
-                      onPressed: _analyzeImage,
-                      child: const Text('Try Again'),
-                    ),
-                  ],
-                ),
-            ],
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        return Transform.translate(
+          offset: Offset(0, _slideAnimation.value),
+          child: Opacity(
+            opacity: _fadeAnimation.value,
+            child: ListTile(
+              leading: widget.leading,
+              title: widget.title,
+              onTap: widget.onTap,
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

@@ -68,8 +68,10 @@ class _LoginScreenState extends State<LoginScreen> {
                             : Icons.visibility,
                         color: Colors.grey,
                       ),
-                      onPressed: () =>
-                          setState(() => _isPasswordVisible = !_isPasswordVisible),
+                      onPressed:
+                          () => setState(
+                            () => _isPasswordVisible = !_isPasswordVisible,
+                          ),
                     ),
                   ),
                 ),
@@ -78,9 +80,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: _isLoading ? null : _handleSignIn,
-                    child: _isLoading
-                        ? const CircularProgressIndicator()
-                        : const Text('Sign In'),
+                    child:
+                        _isLoading
+                            ? const CircularProgressIndicator()
+                            : const Text('Sign In'),
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -100,12 +103,13 @@ class _LoginScreenState extends State<LoginScreen> {
                       style: TextStyle(color: Colors.black54),
                     ),
                     TextButton(
-                      onPressed: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const SignupPage(),
-                        ),
-                      ),
+                      onPressed:
+                          () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const SignupPage(),
+                            ),
+                          ),
                       child: const Text(
                         'Sign up here',
                         style: TextStyle(color: Colors.blue),
@@ -125,10 +129,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return SizedBox(
       height: 150,
       width: 150,
-      child: Image.asset(
-        'assets/images/logo.png',
-        fit: BoxFit.contain,
-      ),
+      child: Image.asset('assets/images/logo.png', fit: BoxFit.contain),
     );
   }
 
@@ -139,13 +140,13 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     setState(() => _isLoading = true);
-    
+
     try {
       await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
-      
+
       if (!mounted) return;
       Navigator.pushReplacement(
         context,
@@ -184,19 +185,13 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _showErrorSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-      ),
+      SnackBar(content: Text(message), backgroundColor: Colors.red),
     );
   }
 
   void _showSuccessSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.green,
-      ),
+      SnackBar(content: Text(message), backgroundColor: Colors.green),
     );
   }
 }

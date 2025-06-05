@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:skincare_app/AppointmentScreen.dart';
 import 'package:skincare_app/AIAnalysisScreen.dart';
 import 'package:skincare_app/BlogScreen.dart';
-// import 'package:skincare_app/BookAppointment.dart';
-import 'package:skincare_app/ChatBotScreen.dart';
+import 'ChatBotScreen.dart';
 import 'package:skincare_app/DoctorChannelingScreen.dart';
 import 'package:skincare_app/shared_widgets.dart';
 
@@ -14,8 +13,7 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage>
-    with TickerProviderStateMixin {
+class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -53,7 +51,9 @@ class _HomePageState extends State<HomePage>
           onTap: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const AppointmentScreen()),
+              MaterialPageRoute(
+                builder: (context) => const AppointmentScreen(),
+              ),
             );
           },
           borderRadius: BorderRadius.circular(20),
@@ -104,7 +104,10 @@ class _HomePageState extends State<HomePage>
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: const [
-                    Text('Reminders', style: TextStyle(color: Color(0xFF666666))),
+                    Text(
+                      'Reminders',
+                      style: TextStyle(color: Color(0xFF666666)),
+                    ),
                     Text(
                       '1 Appointment',
                       style: TextStyle(color: Color(0xFF666666)),
@@ -165,7 +168,7 @@ class _HomePageState extends State<HomePage>
                       icon: Icons.grid_view,
                       title: 'AI Skin Analysis',
                       description:
-                      'AI skin analysis uses advanced image processing to detect skin concerns like acne, wrinkles, and dryness. It provides quick, personalized feedback and care suggestions based on your skin\'s condition.',
+                          'AI skin analysis uses advanced image processing to detect skin concerns like acne, wrinkles, and dryness. It provides quick, personalized feedback and care suggestions based on your skin\'s condition.',
                     ),
                   ),
                 ),
@@ -187,7 +190,7 @@ class _HomePageState extends State<HomePage>
                       icon: Icons.chat_bubble_outline_sharp,
                       title: 'AI Chatbot',
                       description:
-                      'A smart virtual assistant that uses AI to understand and respond to user queries in real time',
+                          'A smart virtual assistant that uses AI to understand and respond to user queries in real time',
                     ),
                   ),
                 ),
@@ -214,7 +217,7 @@ class _HomePageState extends State<HomePage>
               icon: Icons.medical_services_outlined,
               title: 'Doctor Channelling',
               description:
-              'Doctor channelling is a simple way to book appointments with doctors through a phone or online. It helps patients find the right doctor and choose a convenient time without waiting in long lines.',
+                  'Doctor channelling is a simple way to book appointments with doctors through a phone or online. It helps patients find the right doctor and choose a convenient time without waiting in long lines.',
               isFullWidth: true,
             ),
           ),
@@ -336,7 +339,7 @@ class _HomePageState extends State<HomePage>
                     'assets/images/image3.png',
                   ],
                   description:
-                  'Sunscreens are evolving to offer broader protection against UV rays, blue light, and pollution. .',
+                      'Sunscreens are evolving to offer broader protection against UV rays, blue light, and pollution. .',
                 ),
               ),
               const SizedBox(width: 12),
@@ -352,7 +355,7 @@ class _HomePageState extends State<HomePage>
                     'assets/images/image6.png',
                   ],
                   description:
-                  'A new frontier between skin health. Products target connections between environmental factors and neurophysiology-induced skin conditions.',
+                      'A new frontier between skin health. Products target connections between environmental factors and neurophysiology-induced skin conditions.',
                 ),
               ),
               const SizedBox(width: 12),
@@ -368,7 +371,7 @@ class _HomePageState extends State<HomePage>
                     'assets/images/image9.png',
                   ],
                   description:
-                  'Microbiome skincare targets the balance of good bacteria on the skin\'s surface.',
+                      'Microbiome skincare targets the balance of good bacteria on the skin\'s surface.',
                 ),
               ),
             ],
@@ -559,18 +562,12 @@ class _AnimatedFeatureCardState extends State<_AnimatedFeatureCard>
     _scaleAnimation = Tween<double>(
       begin: 0.8,
       end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.elasticOut,
-    ));
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.elasticOut));
 
     _opacityAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeInOut,
-    ));
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
 
     // Delayed start
     Future.delayed(Duration(milliseconds: widget.delay), () {
@@ -616,10 +613,7 @@ class _AnimatedUpdateCard extends StatefulWidget {
   final Widget child;
   final int delay;
 
-  const _AnimatedUpdateCard({
-    required this.child,
-    required this.delay,
-  });
+  const _AnimatedUpdateCard({required this.child, required this.delay});
 
   @override
   State<_AnimatedUpdateCard> createState() => _AnimatedUpdateCardState();
@@ -642,18 +636,12 @@ class _AnimatedUpdateCardState extends State<_AnimatedUpdateCard>
     _slideAnimation = Tween<Offset>(
       begin: const Offset(0.5, 0),
       end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeOutBack,
-    ));
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutBack));
 
     _fadeAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeInOut,
-    ));
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
 
     // Delayed start
     Future.delayed(Duration(milliseconds: widget.delay), () {
@@ -674,10 +662,7 @@ class _AnimatedUpdateCardState extends State<_AnimatedUpdateCard>
       builder: (context, child) {
         return SlideTransition(
           position: _slideAnimation,
-          child: FadeTransition(
-            opacity: _fadeAnimation,
-            child: widget.child,
-          ),
+          child: FadeTransition(opacity: _fadeAnimation, child: widget.child),
         );
       },
     );
@@ -689,10 +674,7 @@ class _AnimatedButton extends StatefulWidget {
   final VoidCallback onPressed;
   final Widget child;
 
-  const _AnimatedButton({
-    required this.onPressed,
-    required this.child,
-  });
+  const _AnimatedButton({required this.onPressed, required this.child});
 
   @override
   State<_AnimatedButton> createState() => _AnimatedButtonState();
@@ -713,10 +695,7 @@ class _AnimatedButtonState extends State<_AnimatedButton>
     _scaleAnimation = Tween<double>(
       begin: 1.0,
       end: 0.95,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeInOut,
-    ));
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
   }
 
   @override
@@ -740,7 +719,8 @@ class _AnimatedButtonState extends State<_AnimatedButton>
           return Transform.scale(
             scale: _scaleAnimation.value,
             child: ElevatedButton(
-              onPressed: null, // Disabled since we handle tap with GestureDetector
+              onPressed: null,
+              // Disabled since we handle tap with GestureDetector
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFF44336),
                 padding: const EdgeInsets.symmetric(

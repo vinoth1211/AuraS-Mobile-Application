@@ -106,7 +106,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
             ),
             const SizedBox(height: 20),
             Text(
-              _isEmailVerified 
+              _isEmailVerified
                   ? 'Email Verified Successfully!'
                   : 'Verification Email Sent',
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
@@ -122,9 +122,9 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                     ? 'You will be redirected shortly...'
                     : 'Check your inbox at ${_currentUser?.email} and verify your email address',
                 textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: Colors.black54,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyLarge?.copyWith(color: Colors.black54),
               ),
             ),
             const SizedBox(height: 30),
@@ -132,9 +132,10 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
               ElevatedButton.icon(
                 onPressed: _isLoading ? null : _resendVerificationEmail,
                 icon: const Icon(Icons.email),
-                label: _isLoading
-                    ? const CircularProgressIndicator()
-                    : const Text('Resend Verification Email'),
+                label:
+                    _isLoading
+                        ? const CircularProgressIndicator()
+                        : const Text('Resend Verification Email'),
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size(double.infinity, 50),
                 ),

@@ -10,9 +10,12 @@ class FAQScreen extends StatefulWidget {
   State<FAQScreen> createState() => _FAQScreenState();
 }
 
-class _FAQScreenState extends State<FAQScreen> {
+class _FAQScreenState extends State<FAQScreen> with TickerProviderStateMixin {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
+  String _selectedCategory = 'All';
+  late TabController _tabController;
+
   final List<FAQItem> _allFAQs = [
     FAQItem(
       question: "What causes acne and how can I treat it?",
@@ -56,81 +59,203 @@ class _FAQScreenState extends State<FAQScreen> {
     ),
   ];
 
+  List<String> get _categories {
+    final categories = ['All'] + _allFAQs.map((faq) => faq.category).toSet().toList();
+    return categories;
+  }
+
   List<FAQItem> get _filteredFAQs {
-    if (_searchQuery.isEmpty) {
-      return _allFAQs;
+    List<FAQItem> filtered = _allFAQs;
+
+    // Filter by category
+    if (_selectedCategory != 'All') {
+      filtered = filtered.where((faq) => faq.category == _selectedCategory).toList();
     }
-    return _allFAQs.where((faq) {
-      return faq.question.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          faq.answer.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          faq.category.toLowerCase().contains(_searchQuery.toLowerCase());
-    }).toList();
+
+    // Filter by search query
+    if (_searchQuery.isNotEmpty) {
+      filtered = filtered.where((faq) {
+        return faq.question.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+            faq.answer.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+            faq.category.toLowerCase().contains(_searchQuery.toLowerCase());
+      }).toList();
+    }
+
+    return filtered;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: _categories.length, vsync: this);
   }
 
   @override
   void dispose() {
     _searchController.dispose();
+    _tabController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF8FAFC),
       body: SafeArea(
         child: Column(
           children: [
             const CustomHeader(),
             const CustomNavigationBar(activeRoute: 'FAQ'),
 
-            // Search Bar
+            // Header Section
             Container(
-              margin: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.lightBlue[50],
-                borderRadius: BorderRadius.circular(30),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.2),
-                    spreadRadius: 1,
-                    blurRadius: 5,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-                border: Border.all(
-                  color: Colors.blue[900]!,
-                  width: 1.5,
+              padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
                 ),
               ),
-              child: TextField(
-                controller: _searchController,
-                onChanged: (value) {
-                  setState(() {
-                    _searchQuery = value;
-                  });
-                },
-                decoration: InputDecoration(
-                  hintText: 'Search frequently asked questions...',
-                  hintStyle: TextStyle(color: Colors.blue[700]),
-                  prefixIcon: Icon(Icons.search, color: Colors.blue[700]),
-                  suffixIcon: _searchQuery.isNotEmpty
-                      ? IconButton(
-                    icon: Icon(Icons.clear, color: Colors.blue[700]),
-                    onPressed: () {
-                      _searchController.clear();
-                      setState(() {
-                        _searchQuery = '';
-                      });
-                    },
-                  )
-                      : null,
-                  border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 16,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Frequently Asked Questions',
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      letterSpacing: -0.5,
+                    ),
                   ),
-                ),
-                style: TextStyle(color: Colors.blue[900]),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Find answers to common skincare questions',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.white.withOpacity(0.9),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Modern Search Bar
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 20,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: TextField(
+                      controller: _searchController,
+                      onChanged: (value) {
+                        setState(() {
+                          _searchQuery = value;
+                        });
+                      },
+                      decoration: InputDecoration(
+                        hintText: 'Search your skincare questions...',
+                        hintStyle: TextStyle(
+                          color: Colors.grey[500],
+                          fontSize: 15,
+                        ),
+                        prefixIcon: Container(
+                          padding: const EdgeInsets.all(12),
+                          child: Icon(
+                            Icons.search_rounded,
+                            color: Colors.grey[400],
+                            size: 22,
+                          ),
+                        ),
+                        suffixIcon: _searchQuery.isNotEmpty
+                            ? Container(
+                          margin: const EdgeInsets.only(right: 8),
+                          child: IconButton(
+                            icon: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: Colors.grey[100],
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                Icons.close_rounded,
+                                color: Colors.grey[600],
+                                size: 16,
+                              ),
+                            ),
+                            onPressed: () {
+                              _searchController.clear();
+                              setState(() {
+                                _searchQuery = '';
+                              });
+                            },
+                          ),
+                        )
+                            : null,
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 16,
+                        ),
+                      ),
+                      style: const TextStyle(
+                        fontSize: 15,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Category Filter Chips
+            Container(
+              height: 60,
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                itemCount: _categories.length,
+                itemBuilder: (context, index) {
+                  final category = _categories[index];
+                  final isSelected = _selectedCategory == category;
+
+                  return Container(
+                    margin: const EdgeInsets.only(right: 12),
+                    child: FilterChip(
+                      label: Text(category),
+                      selected: isSelected,
+                      onSelected: (selected) {
+                        setState(() {
+                          _selectedCategory = category;
+                        });
+                      },
+                      backgroundColor: Colors.white,
+                      selectedColor: const Color(0xFF667EEA).withOpacity(0.15),
+                      checkmarkColor: const Color(0xFF667EEA),
+                      labelStyle: TextStyle(
+                        color: isSelected ? const Color(0xFF667EEA) : Colors.grey[700],
+                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                        fontSize: 13,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        side: BorderSide(
+                          color: isSelected ? const Color(0xFF667EEA) : Colors.grey[300]!,
+                          width: 1.5,
+                        ),
+                      ),
+                      elevation: isSelected ? 2 : 0,
+                      shadowColor: const Color(0xFF667EEA).withOpacity(0.3),
+                    ),
+                  );
+                },
               ),
             ),
 
@@ -139,10 +264,10 @@ class _FAQScreenState extends State<FAQScreen> {
               child: _filteredFAQs.isEmpty
                   ? _buildNoResultsWidget()
                   : ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
                 itemCount: _filteredFAQs.length,
                 itemBuilder: (context, index) {
-                  return _buildFAQCard(_filteredFAQs[index]);
+                  return _buildModernFAQCard(_filteredFAQs[index], index);
                 },
               ),
             ),
@@ -157,26 +282,33 @@ class _FAQScreenState extends State<FAQScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.search_off,
-            size: 80,
-            color: Colors.grey[400],
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.grey[100],
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.search_off_rounded,
+              size: 48,
+              color: Colors.grey[400],
+            ),
           ),
-          const SizedBox(height: 16),
-          Text(
+          const SizedBox(height: 24),
+          const Text(
             'No FAQs found',
             style: TextStyle(
-              fontSize: 20,
+              fontSize: 22,
               fontWeight: FontWeight.w600,
-              color: Colors.grey[600],
+              color: Colors.black87,
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            'Try searching with different keywords',
+            'Try adjusting your search or filter',
             style: TextStyle(
               fontSize: 16,
-              color: Colors.grey[500],
+              color: Colors.grey[600],
             ),
           ),
         ],
@@ -184,110 +316,158 @@ class _FAQScreenState extends State<FAQScreen> {
     );
   }
 
-  Widget _buildFAQCard(FAQItem faq) {
+  Widget _buildModernFAQCard(FAQItem faq, int index) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(15),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            spreadRadius: 1,
-            blurRadius: 5,
-            offset: const Offset(0, 2),
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
-        border: Border.all(
-          color: Colors.grey[200]!,
-          width: 1,
-        ),
       ),
-      child: ExpansionTile(
-        tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-        leading: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: const Color(0xFFE94057).withOpacity(0.1),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(
-            _getCategoryIcon(faq.category),
-            color: const Color(0xFFE94057),
-            size: 20,
+      child: Theme(
+        data: Theme.of(context).copyWith(
+          dividerColor: Colors.transparent,
+          expansionTileTheme: const ExpansionTileThemeData(
+            tilePadding: EdgeInsets.zero,
+            childrenPadding: EdgeInsets.zero,
           ),
         ),
-        title: Text(
-          faq.question,
-          style: const TextStyle(
-            fontWeight: FontWeight.w600,
-            fontSize: 16,
-            color: Colors.black87,
-          ),
-        ),
-        subtitle: Container(
-          margin: const EdgeInsets.only(top: 4),
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-          decoration: BoxDecoration(
-            color: Colors.blue[100],
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Text(
-            faq.category,
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.blue[800],
-              fontWeight: FontWeight.w500,
+        child: ExpansionTile(
+          tilePadding: const EdgeInsets.all(20),
+          childrenPadding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+          leading: Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  _getCategoryColor(faq.category),
+                  _getCategoryColor(faq.category).withOpacity(0.7),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(14),
+              boxShadow: [
+                BoxShadow(
+                  color: _getCategoryColor(faq.category).withOpacity(0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Icon(
+              _getCategoryIcon(faq.category),
+              color: Colors.white,
+              size: 22,
             ),
           ),
-        ),
-        iconColor: const Color(0xFFE94057),
-        collapsedIconColor: Colors.grey[600],
-        children: [
-          Align(
-            alignment: Alignment.centerLeft,
-            child: Container(
-              padding: const EdgeInsets.all(16),
+          title: Text(
+            faq.question,
+            style: const TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 16,
+              color: Colors.black87,
+              height: 1.3,
+            ),
+          ),
+          subtitle: Container(
+            margin: const EdgeInsets.only(top: 8),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: _getCategoryColor(faq.category).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    faq.category,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: _getCategoryColor(faq.category),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          iconColor: Colors.grey[600],
+          collapsedIconColor: Colors.grey[500],
+          expandedAlignment: Alignment.centerLeft,
+          children: [
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 color: Colors.grey[50],
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(16),
               ),
               child: Text(
                 faq.answer,
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: Colors.black87,
-                  height: 1.5,
+                style: TextStyle(
+                  fontSize: 15,
+                  color: Colors.grey[800],
+                  height: 1.6,
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
+  }
+
+  Color _getCategoryColor(String category) {
+    switch (category.toLowerCase()) {
+      case 'acne':
+        return const Color(0xFFEF4444);
+      case 'routine':
+        return const Color(0xFF8B5CF6);
+      case 'skin types':
+        return const Color(0xFF06B6D4);
+      case 'exfoliation':
+        return const Color(0xFF10B981);
+      case 'ingredients':
+        return const Color(0xFFF59E0B);
+      case 'pigmentation':
+        return const Color(0xFFEC4899);
+      case 'professional care':
+        return const Color(0xFF3B82F6);
+      case 'sun protection':
+        return const Color(0xFFF97316);
+      default:
+        return const Color(0xFF6B7280);
+    }
   }
 
   IconData _getCategoryIcon(String category) {
     switch (category.toLowerCase()) {
       case 'acne':
-        return Icons.face_retouching_natural;
+        return Icons.face_retouching_natural_rounded;
       case 'routine':
-        return Icons.schedule;
+        return Icons.schedule_rounded;
       case 'skin types':
-        return Icons.person;
+        return Icons.person_rounded;
       case 'exfoliation':
-        return Icons.cleaning_services;
+        return Icons.cleaning_services_rounded;
       case 'ingredients':
-        return Icons.science;
+        return Icons.science_rounded;
       case 'pigmentation':
-        return Icons.palette;
+        return Icons.palette_rounded;
       case 'professional care':
-        return Icons.medical_services;
+        return Icons.medical_services_rounded;
       case 'sun protection':
-        return Icons.wb_sunny;
+        return Icons.wb_sunny_rounded;
       default:
-        return Icons.help_outline;
+        return Icons.help_outline_rounded;
     }
   }
 }

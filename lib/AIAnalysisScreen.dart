@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'shared_widgets.dart';
-import 'Ai_results.dart'; // Import the AIAnalysisResultScreen
+import 'Ai_results.dart';
 
 class AISkinAnalysisScreen extends StatefulWidget {
   const AISkinAnalysisScreen({super.key});
@@ -29,70 +29,50 @@ class _AISkinAnalysisScreenState extends State<AISkinAnalysisScreen>
   void initState() {
     super.initState();
 
-    // Initialize main animation controller
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 2000),
       vsync: this,
     );
 
-    // Initialize button animation controller
     _buttonController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
 
-    // Initialize upload section animation controller
     _uploadController = AnimationController(
       duration: const Duration(milliseconds: 2000),
       vsync: this,
     )..repeat(reverse: true);
 
-    // Create fade animation
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: const Interval(0.0, 0.6, curve: Curves.easeOut),
-    ));
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: const Interval(0.0, 0.6, curve: Curves.easeOut),
+      ),
+    );
 
-    // Create scale animation
-    _scaleAnimation = Tween<double>(
-      begin: 0.7,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: const Interval(0.2, 0.8, curve: Curves.elasticOut),
-    ));
+    _scaleAnimation = Tween<double>(begin: 0.7, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: const Interval(0.2, 0.8, curve: Curves.elasticOut),
+      ),
+    );
 
-    // Create slide animation for upload section
-    _slideAnimation = Tween<double>(
-      begin: 50.0,
-      end: 0.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: const Interval(0.4, 1.0, curve: Curves.easeOutBack),
-    ));
+    _slideAnimation = Tween<double>(begin: 50.0, end: 0.0).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: const Interval(0.4, 1.0, curve: Curves.easeOutBack),
+      ),
+    );
 
-    // Button scale animation
-    _buttonScaleAnimation = Tween<double>(
-      begin: 1.0,
-      end: 0.95,
-    ).animate(CurvedAnimation(
-      parent: _buttonController,
-      curve: Curves.easeInOut,
-    ));
+    _buttonScaleAnimation = Tween<double>(begin: 1.0, end: 0.95).animate(
+      CurvedAnimation(parent: _buttonController, curve: Curves.easeInOut),
+    );
 
-    // Upload section pulse animation
-    _uploadPulseAnimation = Tween<double>(
-      begin: 0.95,
-      end: 1.05,
-    ).animate(CurvedAnimation(
-      parent: _uploadController,
-      curve: Curves.easeInOut,
-    ));
+    _uploadPulseAnimation = Tween<double>(begin: 0.95, end: 1.05).animate(
+      CurvedAnimation(parent: _uploadController, curve: Curves.easeInOut),
+    );
 
-    // Start the main animation
     _animationController.forward();
   }
 
@@ -104,7 +84,7 @@ class _AISkinAnalysisScreenState extends State<AISkinAnalysisScreen>
     super.dispose();
   }
 
-  void _showImageSourceOptions() {
+  Future<void> _showImageSourceOptions() async {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -120,7 +100,6 @@ class _AISkinAnalysisScreenState extends State<AISkinAnalysisScreen>
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Handle bar
                 Container(
                   margin: const EdgeInsets.only(top: 12, bottom: 20),
                   width: 40,
@@ -144,6 +123,8 @@ class _AISkinAnalysisScreenState extends State<AISkinAnalysisScreen>
                       if (pickedFile != null) {
                         _navigateToImageAnalysis(File(pickedFile.path));
                       }
+                    } else {
+                      _showPermissionDeniedDialog("Camera");
                     }
                   },
                 ),
@@ -153,11 +134,16 @@ class _AISkinAnalysisScreenState extends State<AISkinAnalysisScreen>
                   title: const Text("Upload Image"),
                   onTap: () async {
                     Navigator.pop(context);
-                    final pickedFile = await _picker.pickImage(
-                      source: ImageSource.gallery,
-                    );
-                    if (pickedFile != null) {
-                      _navigateToImageAnalysis(File(pickedFile.path));
+                    final status = await Permission.photos.request();
+                    if (status.isGranted) {
+                      final pickedFile = await _picker.pickImage(
+                        source: ImageSource.gallery,
+                      );
+                      if (pickedFile != null) {
+                        _navigateToImageAnalysis(File(pickedFile.path));
+                      }
+                    } else {
+                      _showPermissionDeniedDialog("Gallery");
                     }
                   },
                 ),
@@ -174,6 +160,31 @@ class _AISkinAnalysisScreenState extends State<AISkinAnalysisScreen>
           ),
         );
       },
+    );
+  }
+
+  void _showPermissionDeniedDialog(String permissionType) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Permission Denied"),
+        content: Text(
+          "The $permissionType permission was denied. Please enable it in settings to proceed.",
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("OK"),
+          ),
+          TextButton(
+            onPressed: () {
+              openAppSettings();
+              Navigator.pop(context);
+            },
+            child: const Text("Open Settings"),
+          ),
+        ],
+      ),
     );
   }
 
@@ -200,7 +211,6 @@ class _AISkinAnalysisScreenState extends State<AISkinAnalysisScreen>
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                   children: [
-                    // Main image section with animations
                     AnimatedBuilder(
                       animation: _animationController,
                       builder: (context, child) {
@@ -247,7 +257,6 @@ class _AISkinAnalysisScreenState extends State<AISkinAnalysisScreen>
                                         ),
                                         const SizedBox(height: 8),
                                         Row(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
                                             TweenAnimationBuilder<double>(
                                               duration: const Duration(milliseconds: 1500),
@@ -282,10 +291,7 @@ class _AISkinAnalysisScreenState extends State<AISkinAnalysisScreen>
                         );
                       },
                     ),
-
                     const SizedBox(height: 16),
-
-                    // Upload section with animations
                     AnimatedBuilder(
                       animation: _animationController,
                       builder: (context, child) {
@@ -447,23 +453,14 @@ class _AnimatedListTileState extends State<_AnimatedListTile>
       vsync: this,
     );
 
-    _slideAnimation = Tween<double>(
-      begin: 50.0,
-      end: 0.0,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeOutBack,
-    ));
+    _slideAnimation = Tween<double>(begin: 50.0, end: 0.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOutBack),
+    );
 
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeOut,
-    ));
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
+    );
 
-    // Start animation with delay
     Future.delayed(Duration(milliseconds: widget.delay), () {
       if (mounted) _controller.forward();
     });

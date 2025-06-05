@@ -1,45 +1,128 @@
 import 'dart:io';
 import 'dart:typed_data';
+import 'dart:convert';
+import 'dart:ui';
 import 'package:google_generative_ai/google_generative_ai.dart';
 
 class GeminiService {
   static const String _apiKey = 'AIzaSyDsasWDmeHMsJCFbjGyFYmbLDLmDof7boA';
   late final GenerativeModel _model;
+  final int _maxRetries = 2;
+  final Duration _timeout = const Duration(seconds: 30);
 
   GeminiService() {
     _model = GenerativeModel(
       model: 'gemini-1.5-flash',
       apiKey: _apiKey,
+      generationConfig: GenerationConfig(
+        temperature: 0.3, // Lower for more deterministic responses
+        topP: 0.7,
+        topK: 20,
+      ),
     );
   }
 
-  Future<SkinAnalysisResult> analyzeSkinImage(File imageFile) async {
+  Future<SkinAnalysisResult> analyzeSkinImage(
+      File imageFile, {
+        String? userContext,
+        int retryCount = 0,
+      }) async {
     try {
-      // Read image as bytes
-      final Uint8List imageBytes = await imageFile.readAsBytes();
+      // Validate image first
+      if (!await imageFile.exists()) {
+        throw Exception('Image file does not exist');
+      }
 
-      // Create the prompt for skin analysis
-      const prompt = '''
-      You are a dermatology AI assistant. Analyze this skin image and provide:
+      if (await imageFile.length() > 5 * 1024 * 1024) {
+        throw Exception('Image size exceeds 5MB limit');
+      }
+
+      // Read and preprocess image
+      final Uint8List imageBytes = await _preprocessImage(imageFile);
+
+      // Enhanced prompt with structured output and context
+      final prompt = '''
+      **Dermatology Image Analysis Request**
       
-      1. DETECTED CONDITIONS: List any visible skin conditions, acne, redness, dryness, or other concerns
-      2. SEVERITY: Rate the severity (Mild/Moderate/Severe) for each condition
-      3. RECOMMENDATIONS: Provide specific skincare recommendations
-      4. WHEN TO SEE DOCTOR: Indicate if professional medical consultation is needed
+      ${userContext != null ? "User Context: $userContext\n" : ""}
       
-      Format your response as JSON with these exact keys:
+      Please analyze this skin image carefully and provide:
+      
+      1. **Detected Conditions**: 
+         - List specific skin conditions observed
+         - Only include conditions with high confidence
+         - Format as ["condition1", "condition2"]
+      
+      2. **Severity Assessment**:
+         - For each condition, assess severity (Mild/Moderate/Severe)
+         - Format as {"condition1": "Severity", "condition2": "Severity"}
+      
+      3. **Recommendations**:
+         - Provide 3-5 specific, actionable recommendations
+         - Include product types when appropriate
+         - Format as ["recommendation1", "recommendation2"]
+      
+      4. **Medical Consultation**:
+         - "seeDoctor": true/false based on condition severity
+         - "doctorReason": Brief explanation if true
+      
+      **Response Requirements**:
+      - Must be valid JSON format only
+      - No additional text outside JSON
+      - Use this exact structure:
       {
-        "detectedConditions": ["condition1", "condition2"],
-        "severity": {"condition1": "Mild", "condition2": "Moderate"},
-        "recommendations": ["recommendation1", "recommendation2", "recommendation3"],
-        "seeDoctor": true/false,
-        "doctorReason": "reason if seeDoctor is true"
+        "detectedConditions": [],
+        "severity": {},
+        "recommendations": [],
+        "seeDoctor": false,
+        "doctorReason": "",
+        "confidenceScore": 0-100
       }
       
-      Important: This is for educational purposes only and should not replace professional medical advice.
+      **Important Notes**:
+      - Be conservative in diagnoses
+      - When uncertain, recommend consultation
+      - This is for educational purposes only
       ''';
 
-      // Create content with image and text
+      // Generate content with retry logic
+      final response = await _generateContentWithRetry(
+        imageBytes,
+        prompt,
+        retryCount,
+      );
+
+      // Parse and validate response
+      return _parseAnalysisResult(response);
+    } catch (e) {
+      print('Error analyzing image: $e');
+      return SkinAnalysisResult.error(
+        'Failed to analyze image: ${e.toString()}',
+        rawResponse: e.toString(),
+      );
+    }
+  }
+
+  Future<Uint8List> _preprocessImage(File imageFile) async {
+    try {
+      final bytes = await imageFile.readAsBytes();
+      // Here you could add actual image preprocessing:
+      // - Resize to optimal dimensions
+      // - Normalize lighting/contrast
+      // - Convert to consistent format
+      return bytes;
+    } catch (e) {
+      print('Image preprocessing error: $e');
+      throw Exception('Failed to process image');
+    }
+  }
+
+  Future<String> _generateContentWithRetry(
+      Uint8List imageBytes,
+      String prompt,
+      int retryCount,
+      ) async {
+    try {
       final content = [
         Content.multi([
           TextPart(prompt),
@@ -47,50 +130,79 @@ class GeminiService {
         ])
       ];
 
-      // Generate response
-      final response = await _model.generateContent(content);
-      final responseText = response.text ?? '';
+      final response = await _model.generateContent(content)
+          .timeout(_timeout);
 
-      // Parse the JSON response
-      return _parseAnalysisResult(responseText);
+      if (response.text == null || response.text!.isEmpty) {
+        throw Exception('Empty response from API');
+      }
 
+      return response.text!;
     } catch (e) {
-      print('Error analyzing image: $e');
-      return SkinAnalysisResult.error('Failed to analyze image: ${e.toString()}');
+      if (retryCount < _maxRetries) {
+        // Exponential backoff
+        await Future.delayed(Duration(seconds: 1 * (retryCount + 1)));
+        return _generateContentWithRetry(imageBytes, prompt, retryCount + 1);
+      }
+      rethrow;
     }
   }
 
   SkinAnalysisResult _parseAnalysisResult(String responseText) {
     try {
-      // Extract JSON from response (in case there's additional text)
-      final jsonStart = responseText.indexOf('{');
-      final jsonEnd = responseText.lastIndexOf('}') + 1;
+      // Clean the response text
+      String cleanedResponse = responseText.trim();
 
-      if (jsonStart == -1 || jsonEnd == 0) {
-        // If no JSON found, create a basic result from the text
-        return SkinAnalysisResult(
-          detectedConditions: ['Analysis completed'],
-          severity: {'General': 'Mild'},
-          recommendations: [
-            'Use gentle cleanser twice daily',
-            'Apply moisturizer after cleansing',
-            'Use sunscreen daily'
-          ],
-          seeDoctor: false,
-          doctorReason: '',
-          rawResponse: responseText,
-        );
+      // Remove markdown code blocks if present
+      if (cleanedResponse.startsWith('```json')) {
+        cleanedResponse = cleanedResponse.substring(7);
+      }
+      if (cleanedResponse.endsWith('```')) {
+        cleanedResponse = cleanedResponse.substring(0, cleanedResponse.length - 3);
       }
 
-      final jsonString = responseText.substring(jsonStart, jsonEnd);
+      // Parse JSON
+      final jsonMap = jsonDecode(cleanedResponse) as Map<String, dynamic>;
 
-      // For simplicity, we'll parse manually since JSON parsing can be complex
-      // In a production app, you'd want to use dart:convert
-      return SkinAnalysisResult.fromResponse(responseText);
+      // Validate and extract data
+      final conditions = List<String>.from(jsonMap['detectedConditions'] ?? []);
+      final severity = Map<String, String>.from(jsonMap['severity'] ?? {});
+      final recommendations = List<String>.from(jsonMap['recommendations'] ?? []);
+      final seeDoctor = jsonMap['seeDoctor'] as bool? ?? false;
+      final doctorReason = jsonMap['doctorReason'] as String? ?? '';
+      final confidenceScore = jsonMap['confidenceScore'] as int? ?? 0;
 
+      // Validate severity matches conditions
+      for (final condition in conditions) {
+        if (!severity.containsKey(condition)) {
+          severity[condition] = 'Mild';
+        }
+      }
+
+      // Ensure we have at least basic recommendations
+      if (recommendations.isEmpty) {
+        recommendations.addAll([
+          'Use gentle, fragrance-free cleanser',
+          'Apply moisturizer daily',
+          'Use broad-spectrum sunscreen SPF 30+'
+        ]);
+      }
+
+      return SkinAnalysisResult(
+        detectedConditions: conditions,
+        severity: severity,
+        recommendations: recommendations,
+        seeDoctor: seeDoctor,
+        doctorReason: doctorReason,
+        confidenceScore: confidenceScore,
+        rawResponse: responseText,
+      );
     } catch (e) {
-      print('Error parsing response: $e');
-      return SkinAnalysisResult.error('Failed to parse analysis results');
+      print('Error parsing response: $e\nResponse: $responseText');
+      return SkinAnalysisResult.error(
+        'Failed to parse analysis results',
+        rawResponse: responseText,
+      );
     }
   }
 }
@@ -101,6 +213,7 @@ class SkinAnalysisResult {
   final List<String> recommendations;
   final bool seeDoctor;
   final String doctorReason;
+  final int confidenceScore;
   final String rawResponse;
   final bool isError;
   final String? errorMessage;
@@ -112,99 +225,44 @@ class SkinAnalysisResult {
     required this.seeDoctor,
     required this.doctorReason,
     required this.rawResponse,
+    this.confidenceScore = 0,
     this.isError = false,
     this.errorMessage,
   });
 
-  factory SkinAnalysisResult.error(String message) {
+  factory SkinAnalysisResult.error(String message, {String rawResponse = ''}) {
     return SkinAnalysisResult(
       detectedConditions: [],
       severity: {},
       recommendations: [],
       seeDoctor: false,
       doctorReason: '',
-      rawResponse: '',
+      rawResponse: rawResponse,
       isError: true,
       errorMessage: message,
     );
   }
 
-  factory SkinAnalysisResult.fromResponse(String response) {
-    // Basic parsing - extract key information from response
-    final detectedConditions = <String>[];
-    final recommendations = <String>[];
-    final severity = <String, String>{};
-
-    // Extract detected conditions (looking for bullet points or lists)
-    final lines = response.split('\n');
-    bool inConditions = false;
-    bool inRecommendations = false;
-    bool seeDoctor = false;
-    String doctorReason = '';
-
-    for (String line in lines) {
-      final trimmed = line.trim();
-
-      if (trimmed.toLowerCase().contains('detected') ||
-          trimmed.toLowerCase().contains('condition')) {
-        inConditions = true;
-        inRecommendations = false;
-        continue;
-      }
-
-      if (trimmed.toLowerCase().contains('recommendation') ||
-          trimmed.toLowerCase().contains('treatment')) {
-        inConditions = false;
-        inRecommendations = true;
-        continue;
-      }
-
-      if (trimmed.toLowerCase().contains('doctor') ||
-          trimmed.toLowerCase().contains('dermatologist')) {
-        seeDoctor = true;
-        doctorReason = trimmed;
-      }
-
-      if (inConditions && (trimmed.startsWith('•') ||
-          trimmed.startsWith('-') ||
-          trimmed.startsWith('*'))) {
-        detectedConditions.add(trimmed.substring(1).trim());
-      }
-
-      if (inRecommendations && (trimmed.startsWith('•') ||
-          trimmed.startsWith('-') ||
-          trimmed.startsWith('*') ||
-          RegExp(r'^\d+\.').hasMatch(trimmed))) {
-        recommendations.add(trimmed.replaceAll(RegExp(r'^[•\-\*\d\.]\s*'), ''));
-      }
+  // Helper method to get severity color for UI
+  Color getSeverityColor(String condition) {
+    final severityLevel = severity[condition]?.toLowerCase() ?? 'mild';
+    switch (severityLevel) {
+      case 'severe':
+        return const Color(0xFFEF5350);
+      case 'moderate':
+        return const Color(0xFFFF9800);
+      case 'mild':
+        return const Color(0xFF4CAF50);
+      default:
+        return const Color(0xFF9E9E9E);
     }
+  }
 
-    // Set default values if nothing was found
-    if (detectedConditions.isEmpty) {
-      detectedConditions.addAll(['Skin analysis completed', 'General skin assessment']);
-    }
-
-    if (recommendations.isEmpty) {
-      recommendations.addAll([
-        'Maintain good skincare routine',
-        'Use gentle, fragrance-free products',
-        'Apply moisturizer daily',
-        'Use broad-spectrum sunscreen'
-      ]);
-    }
-
-    // Set severity for detected conditions
-    for (String condition in detectedConditions) {
-      severity[condition] = 'Mild'; // Default severity
-    }
-
-    return SkinAnalysisResult(
-      detectedConditions: detectedConditions,
-      severity: severity,
-      recommendations: recommendations,
-      seeDoctor: seeDoctor,
-      doctorReason: doctorReason,
-      rawResponse: response,
-    );
+  // Confidence level description
+  String get confidenceLevel {
+    if (confidenceScore > 75) return 'High Confidence';
+    if (confidenceScore > 50) return 'Moderate Confidence';
+    if (confidenceScore > 25) return 'Low Confidence';
+    return 'Very Low Confidence';
   }
 }

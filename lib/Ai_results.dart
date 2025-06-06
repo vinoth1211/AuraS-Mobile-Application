@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'shared_widgets.dart';
 import 'services/gemini_service.dart';
+import 'DoctorChannelingScreen.dart';
 
 class AIAnalysisResultScreen extends StatefulWidget {
   final File imageFile;
@@ -355,11 +356,13 @@ class _AIAnalysisResultScreenState extends State<AIAnalysisResultScreen> {
                                       vertical: 2,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: result.getSeverityColor(condition)
+                                      color: result
+                                          .getSeverityColor(condition)
                                           .withOpacity(0.2),
                                       borderRadius: BorderRadius.circular(12),
                                       border: Border.all(
-                                        color: result.getSeverityColor(condition),
+                                        color:
+                                        result.getSeverityColor(condition),
                                         width: 1,
                                       ),
                                     ),
@@ -369,7 +372,8 @@ class _AIAnalysisResultScreenState extends State<AIAnalysisResultScreen> {
                                           .textTheme
                                           .labelSmall
                                           ?.copyWith(
-                                        color: result.getSeverityColor(condition),
+                                        color:
+                                        result.getSeverityColor(condition),
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
@@ -431,7 +435,10 @@ class _AIAnalysisResultScreenState extends State<AIAnalysisResultScreen> {
                         ),
                         child: Text(
                           "${entry.key + 1}",
-                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          style: Theme.of(context)
+                              .textTheme
+                              .labelSmall
+                              ?.copyWith(
                             color: Colors.green[800],
                             fontWeight: FontWeight.bold,
                           ),
@@ -492,7 +499,13 @@ class _AIAnalysisResultScreenState extends State<AIAnalysisResultScreen> {
                   const SizedBox(height: 12),
                   ElevatedButton(
                     onPressed: () {
-                      // TODO: Implement doctor consultation flow
+                      // Navigate to Doctor Channeling Page
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const DoctorChannelingScreen(),
+                        ),
+                      );
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.orange[600],

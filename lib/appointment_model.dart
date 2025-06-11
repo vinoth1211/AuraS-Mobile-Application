@@ -1,4 +1,7 @@
 // appointment_model.dart
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+
 class Appointment {
   final String id;
   final String userId;
@@ -9,6 +12,7 @@ class Appointment {
   final String userName;
   final String userEmail;
   final String userPhone;
+  final String dermatologistName;
 
   Appointment({
     required this.id,
@@ -20,6 +24,7 @@ class Appointment {
     required this.userName,
     required this.userEmail,
     required this.userPhone,
+    required this.dermatologistName,
   });
 
   Map<String, dynamic> toMap() {
@@ -32,6 +37,7 @@ class Appointment {
       'userName': userName,
       'userEmail': userEmail,
       'userPhone': userPhone,
+      'dermatologistName': dermatologistName,
       'createdAt': Timestamp.now(),
     };
   }

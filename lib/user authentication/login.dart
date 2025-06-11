@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'signup.dart';
 import '../home_page.dart';
+import '../AdminDermatologistScreen.dart'; // New import
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -10,11 +11,18 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
+String? adminUid;
+
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _isPasswordVisible = false;
   bool _isLoading = false;
+  bool _isAdminLoading = false; // Separate loading state for admin login
+
+  // Admin credentials
+  static const String adminEmail = "admin@auras.com";
+  static const String adminPassword = "admin123";
 
   @override
   void dispose() {
@@ -68,10 +76,9 @@ class _LoginScreenState extends State<LoginScreen> {
                             : Icons.visibility,
                         color: Colors.grey,
                       ),
-                      onPressed:
-                          () => setState(
+                      onPressed: () => setState(
                             () => _isPasswordVisible = !_isPasswordVisible,
-                          ),
+                      ),
                     ),
                   ),
                 ),
@@ -79,13 +86,31 @@ class _LoginScreenState extends State<LoginScreen> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: _isLoading ? null : _handleSignIn,
-                    child:
-                        _isLoading
-                            ? const CircularProgressIndicator()
-                            : const Text('Sign In'),
+                    onPressed: (_isLoading || _isAdminLoading) ? null : _handleSignIn,
+                    child: _isLoading
+                        ? const CircularProgressIndicator()
+                        : const Text('Sign In'),
                   ),
                 ),
+
+                // Admin Login Button
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    onPressed: (_isLoading || _isAdminLoading) ? null : _handleAdminLogin,
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Colors.blue),
+                    ),
+                    child: _isAdminLoading
+                        ? const CircularProgressIndicator()
+                        : const Text(
+                      'Admin Login',
+                      style: TextStyle(color: Colors.blue),
+                    ),
+                  ),
+                ),
+
                 const SizedBox(height: 8),
                 TextButton(
                   onPressed: _handleForgotPassword,
@@ -94,7 +119,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     style: TextStyle(color: Colors.black54),
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 10),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -103,13 +128,12 @@ class _LoginScreenState extends State<LoginScreen> {
                       style: TextStyle(color: Colors.black54),
                     ),
                     TextButton(
-                      onPressed:
-                          () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const SignupPage(),
-                            ),
-                          ),
+                      onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const SignupPage(),
+                        ),
+                      ),
                       child: const Text(
                         'Sign up here',
                         style: TextStyle(color: Colors.blue),
@@ -142,16 +166,28 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = true);
 
     try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
+      final userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
 
-      if (!mounted) return;
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const HomePage()),
-      );
+      // Check if user is trying to login as admin through regular sign in
+      if (_emailController.text.trim() == adminEmail) {
+        // If admin credentials are used in regular sign in, redirect to admin screen
+        adminUid = userCredential.user?.uid;
+        if (!mounted) return;
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const AdminDermatologistScreen()),
+        );
+      } else {
+        // Regular user login - redirect to home page
+        if (!mounted) return;
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomePage()),
+        );
+      }
     } on FirebaseAuthException catch (e) {
       String message = 'An error occurred';
       if (e.code == 'user-not-found') {
@@ -164,6 +200,46 @@ class _LoginScreenState extends State<LoginScreen> {
       _showErrorSnackBar(message);
     } finally {
       if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _handleAdminLogin() async {
+    // Validate that admin credentials are entered
+    if (_emailController.text.trim() != adminEmail ||
+        _passwordController.text.trim() != adminPassword) {
+      _showErrorSnackBar('Please enter admin credentials in the email and password fields');
+      return;
+    }
+
+    setState(() => _isAdminLoading = true);
+
+    try {
+      final userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: adminEmail,
+        password: adminPassword,
+      );
+
+      adminUid = userCredential.user?.uid;
+
+      if (!mounted) return;
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const AdminDermatologistScreen()),
+      );
+    } on FirebaseAuthException catch (e) {
+      String message = 'Admin login failed';
+      if (e.code == 'user-not-found') {
+        message = 'Admin account not found. Please contact support.';
+      } else if (e.code == 'wrong-password') {
+        message = 'Incorrect admin credentials';
+      } else if (e.code == 'invalid-email') {
+        message = 'Invalid admin email format';
+      } else {
+        message = 'Admin login failed: ${e.message}';
+      }
+      _showErrorSnackBar(message);
+    } finally {
+      if (mounted) setState(() => _isAdminLoading = false);
     }
   }
 

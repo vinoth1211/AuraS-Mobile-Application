@@ -178,7 +178,7 @@ class _LoginScreenState extends State<LoginScreen> {
         if (!mounted) return;
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const AdminDermatologistScreen()),
+          MaterialPageRoute(builder: (context) => const AddDermatologistScreen()),
         );
       } else {
         // Regular user login - redirect to home page
@@ -224,7 +224,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!mounted) return;
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const AdminDermatologistScreen()),
+        MaterialPageRoute(builder: (context) => const AddDermatologistScreen()),
       );
     } on FirebaseAuthException catch (e) {
       String message = 'Admin login failed';

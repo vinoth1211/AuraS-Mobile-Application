@@ -47,6 +47,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
+enum AppointmentStatus {
+  confirmed,
+  pending,
+  completed,
+  cancelled,
+}
+
 class Appointment {
   final String id;
   final String userId;

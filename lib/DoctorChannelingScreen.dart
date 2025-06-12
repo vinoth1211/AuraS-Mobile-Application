@@ -677,7 +677,7 @@ class _EnhancedDermatologistCardState extends State<EnhancedDermatologistCard>
                           backgroundColor: Colors.white,
                           child: CircleAvatar(
                             radius: 28,
-                            backgroundImage: AssetImage(widget.dermatologist.imageAsset),
+                            backgroundImage: NetworkImage(widget.dermatologist.imageAsset),
                           ),
                         ),
                       ),

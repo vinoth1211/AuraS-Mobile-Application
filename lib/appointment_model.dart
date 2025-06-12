@@ -1,138 +1,92 @@
-// // appointment_model.dart
-// import 'package:cloud_firestore/cloud_firestore.dart';
-// import 'package:flutter/material.dart';
-//
-// class Appointment {
-//   final String id;
-//   final String userId;
-//   final String dermatologistId;
-//   final DateTime date;
-//   final TimeOfDay time;
-//   final String status; // 'pending', 'confirmed', 'canceled'
-//   final String userName;
-//   final String userEmail;
-//   final String userPhone;
-//   final String dermatologistName;
-//
-//   Appointment({
-//     required this.id,
-//     required this.userId,
-//     required this.dermatologistId,
-//     required this.date,
-//     required this.time,
-//     required this.status,
-//     required this.userName,
-//     required this.userEmail,
-//     required this.userPhone,
-//     required this.dermatologistName,
-//   });
-//
-//   Map<String, dynamic> toMap() {
-//     return {
-//       'userId': userId,
-//       'dermatologistId': dermatologistId,
-//       'date': Timestamp.fromDate(date),
-//       'time': '${time.hour}:${time.minute}',
-//       'status': status,
-//       'userName': userName,
-//       'userEmail': userEmail,
-//       'userPhone': userPhone,
-//       'dermatologistName': dermatologistName,
-//       'createdAt': Timestamp.now(),
-//     };
-//   }
-// }
-
-// appointment_model.dart
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-
-enum AppointmentStatus {
-  confirmed,
-  pending,
-  completed,
-  cancelled,
-}
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Appointment {
   final String id;
   final String userId;
   final String dermatologistId;
+  final String dermatologistEmail;
   final DateTime date;
   final TimeOfDay time;
-  final String status; // 'pending', 'confirmed', 'cancelled', 'completed'
+  final String status;
   final String userName;
   final String userEmail;
   final String userPhone;
   final String dermatologistName;
-  final String? dermatologistContact; // WhatsApp, phone, etc.
-  final String? meetingLink; // Google Meet, Zoom, etc.
   final DateTime createdAt;
+  final double consultationFee;
   final DateTime? confirmedAt;
   final DateTime? cancelledAt;
   final String? cancellationReason;
+  final String? dermatologistPhone;
 
   Appointment({
     required this.id,
     required this.userId,
     required this.dermatologistId,
+    required this.dermatologistEmail,
     required this.date,
     required this.time,
-    required this.status,
+    this.status = 'pending',
     required this.userName,
     required this.userEmail,
     required this.userPhone,
     required this.dermatologistName,
-    this.dermatologistContact,
-    this.meetingLink,
-    DateTime? createdAt,
+    required this.createdAt,
+    required this.consultationFee,
     this.confirmedAt,
     this.cancelledAt,
     this.cancellationReason,
-  }) : createdAt = createdAt ?? DateTime.now();
+    this.dermatologistPhone,
+  });
 
-  Map<String, dynamic> toMap() {
+  // Convert to Firestore format
+  Map<String, dynamic> toFirestore() {
     return {
+      'id': id,
       'userId': userId,
       'dermatologistId': dermatologistId,
+      'dermatologistEmail': dermatologistEmail,
       'date': Timestamp.fromDate(date),
-      'time': '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}',
+      'time': {'hour': time.hour, 'minute': time.minute},
       'status': status,
       'userName': userName,
       'userEmail': userEmail,
       'userPhone': userPhone,
       'dermatologistName': dermatologistName,
-      'dermatologistContact': dermatologistContact,
-      'meetingLink': meetingLink,
       'createdAt': Timestamp.fromDate(createdAt),
+      'consultationFee': consultationFee,
       'confirmedAt': confirmedAt != null ? Timestamp.fromDate(confirmedAt!) : null,
       'cancelledAt': cancelledAt != null ? Timestamp.fromDate(cancelledAt!) : null,
       'cancellationReason': cancellationReason,
+      'dermatologistPhone': dermatologistPhone,
     };
   }
 
-  factory Appointment.fromMap(Map<String, dynamic> map, String documentId) {
-    final timeParts = (map['time'] as String).split(':');
+  // Create from Firestore document
+  factory Appointment.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
     return Appointment(
-      id: documentId,
-      userId: map['userId'] ?? '',
-      dermatologistId: map['dermatologistId'] ?? '',
-      date: (map['date'] as Timestamp).toDate(),
+      id: doc.id,
+      userId: data['userId'] ?? '',
+      dermatologistId: data['dermatologistId'] ?? '',
+      dermatologistEmail: data['dermatologistEmail'] ?? '',
+      date: (data['date'] as Timestamp).toDate(),
       time: TimeOfDay(
-        hour: int.parse(timeParts[0]),
-        minute: int.parse(timeParts[1]),
+        hour: data['time']['hour'] ?? 0,
+        minute: data['time']['minute'] ?? 0,
       ),
-      status: map['status'] ?? 'pending',
-      userName: map['userName'] ?? '',
-      userEmail: map['userEmail'] ?? '',
-      userPhone: map['userPhone'] ?? '',
-      dermatologistName: map['dermatologistName'] ?? '',
-      dermatologistContact: map['dermatologistContact'],
-      meetingLink: map['meetingLink'],
-      createdAt: (map['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      confirmedAt: (map['confirmedAt'] as Timestamp?)?.toDate(),
-      cancelledAt: (map['cancelledAt'] as Timestamp?)?.toDate(),
-      cancellationReason: map['cancellationReason'],
+      status: data['status'] ?? 'pending',
+      userName: data['userName'] ?? '',
+      userEmail: data['userEmail'] ?? '',
+      userPhone: data['userPhone'] ?? '',
+      dermatologistName: data['dermatologistName'] ?? '',
+      createdAt: (data['createdAt'] as Timestamp).toDate(),
+      consultationFee: (data['consultationFee'] ?? 0).toDouble(),
+      confirmedAt: data['confirmedAt'] != null ? (data['confirmedAt'] as Timestamp).toDate() : null,
+      cancelledAt: data['cancelledAt'] != null ? (data['cancelledAt'] as Timestamp).toDate() : null,
+      cancellationReason: data['cancellationReason'],
+      dermatologistPhone: data['dermatologistPhone'],
     );
   }
 
@@ -140,6 +94,7 @@ class Appointment {
     String? id,
     String? userId,
     String? dermatologistId,
+    String? dermatologistEmail,
     DateTime? date,
     TimeOfDay? time,
     String? status,
@@ -147,17 +102,18 @@ class Appointment {
     String? userEmail,
     String? userPhone,
     String? dermatologistName,
-    String? dermatologistContact,
-    String? meetingLink,
     DateTime? createdAt,
+    double? consultationFee,
     DateTime? confirmedAt,
     DateTime? cancelledAt,
     String? cancellationReason,
+    String? dermatologistPhone,
   }) {
     return Appointment(
       id: id ?? this.id,
       userId: userId ?? this.userId,
       dermatologistId: dermatologistId ?? this.dermatologistId,
+      dermatologistEmail: dermatologistEmail ?? this.dermatologistEmail,
       date: date ?? this.date,
       time: time ?? this.time,
       status: status ?? this.status,
@@ -165,12 +121,12 @@ class Appointment {
       userEmail: userEmail ?? this.userEmail,
       userPhone: userPhone ?? this.userPhone,
       dermatologistName: dermatologistName ?? this.dermatologistName,
-      dermatologistContact: dermatologistContact ?? this.dermatologistContact,
-      meetingLink: meetingLink ?? this.meetingLink,
       createdAt: createdAt ?? this.createdAt,
+      consultationFee: consultationFee ?? this.consultationFee,
       confirmedAt: confirmedAt ?? this.confirmedAt,
       cancelledAt: cancelledAt ?? this.cancelledAt,
       cancellationReason: cancellationReason ?? this.cancellationReason,
+      dermatologistPhone: dermatologistPhone ?? this.dermatologistPhone,
     );
   }
 }

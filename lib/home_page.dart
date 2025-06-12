@@ -6,6 +6,8 @@ import 'ChatBotScreen.dart';
 import 'package:skincare_app/DoctorChannelingScreen.dart';
 import 'package:skincare_app/shared_widgets.dart';
 
+import 'my_appointments_screen.dart';
+
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -52,7 +54,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => const AppointmentsScreen(userId: '',),
+                builder: (context) => MyAppointmentsScreen(),
               ),
             );
           },

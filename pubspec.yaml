@@ -53,8 +53,8 @@ dependencies:
   firebase_core_web: ^2.10.0
   firebase_auth_web: ^5.8.13
 
-
 dev_dependencies:
+  flutter_launcher_icons: "^0.13.1"
   flutter_test:
     sdk: flutter
 
@@ -125,3 +125,7 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/logo.png"

@@ -4,137 +4,75 @@ import 'package:skincare_app/shared_widgets.dart'; // assuming you have CustomHe
 class BlogScreen extends StatelessWidget {
   const BlogScreen({super.key});
 
-  // @override
-  // Widget build(BuildContext context) {
-  //   return Scaffold(
-  //     backgroundColor: Colors.white,
-  //     body: SafeArea(
-  //       child: Column(
-  //         children: [
-  //           const CustomHeader(),
-  //           const CustomNavigationBar(activeRoute: 'Blog'),
-  //           Expanded(
-  //             child: SingleChildScrollView(
-  //               child: Column(
-  //                 crossAxisAlignment: CrossAxisAlignment.start,
-  //                 children: [
-  //                   const SizedBox(height: 20),
-  //                   const Center(
-  //                     child: Text(
-  //                       'RECENT POSTS',
-  //                       style: TextStyle(
-  //                         fontSize: 22,
-  //                         fontWeight: FontWeight.bold,
-  //                       ),
-  //                     ),
-  //                   ),
-  //                   const SizedBox(height: 20),
-
-  //                   // Blog Card 1
-  //                   _blogCard(
-  //                     title: 'Smart SPF Protection',
-  //                     imageUrl: 'assets/images/image1.png',
-  //                     description:
-  //                         'Sunscreens are evolving to offer broader protection against UV rays, blue light, and pollution. Innovations include powder and mist SPF formats that are easy to apply and reapply throughout the day.',
-  //                   ),
-
-  //                   // Blog Card 2
-  //                   _blogCard(
-  //                     title: 'Neurocosmetics',
-  //                     imageUrl: 'assets/images/image2.png',
-  //                     description:
-  //                         'Neurocosmetics focus on the connection between emotional well-being and skin health. Products infused with adaptogens and neuropeptides aim to reduce stress-induced skin issues, promoting a holistic approach to skincare.',
-  //                   ),
-
-  //                   // Blog Card 3
-  //                   _blogCard(
-  //                     title: 'Microbiome Skincare',
-  //                     imageUrl: 'assets/images/image7.png',
-  //                     description:
-  //                         'Microbiome skincare targets the balance of good bacteria on the skin’s surface. Products with prebiotics, probiotics, and postbiotics help strengthen the skin barrier, reduce inflammation, and support a healthy, resilient complexion.',
-  //                   ),
-  //                   const SizedBox(height: 20),
-  //                 ],
-  //               ),
-  //             ),
-  //           ),
-  //         ],
-  //       ),
-  //     ),
-  //   );
-  // }
-
   @override
-Widget build(BuildContext context) {
-  return Scaffold(
-    backgroundColor: Colors.white,
-    body: SafeArea(
-      child: Column(
-        children: [
-          const CustomHeader(),
-          const CustomNavigationBar(activeRoute: 'Blog'),
-          Expanded(
-            child: Container(
-              margin: const EdgeInsets.only(top: 16), // Space from navigation bar
-              decoration: const BoxDecoration(
-                color: Color(0xFFD9D9D9), // Light gray background
-                borderRadius: BorderRadius.only(
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: Column(
+          children: [
+            const CustomHeader(),
+            const CustomNavigationBar(activeRoute: 'Blog'),
+            Expanded(
+              child: ClipRRect(
+                borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(30),
                   topRight: Radius.circular(30),
                 ),
-              ),
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const Center(
-                      child: Text(
-                        'RECENT POSTS',
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
+                child: Container(
+                  color: Colors.white, // White background instead of gray
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const Center(
+                          child: Text(
+                            'RECENT POSTS',
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
+                        const SizedBox(height: 20),
 
-                    // Blog Card 1
-                    _blogCard(
-                      title: 'Smart SPF Protection',
-                      imageUrl: 'assets/images/image1.png',
-                      description:
+                        // Blog Card 1
+                        _blogCard(
+                          title: 'Smart SPF Protection',
+                          imageUrl: 'assets/images/image1.png',
+                          description:
                           'Sunscreens are evolving to offer broader protection against UV rays, blue light, and pollution. Innovations include powder and mist SPF formats that are easy to apply and reapply throughout the day.',
-                    ),
+                        ),
 
-                    // Blog Card 2
-                    _blogCard(
-                      title: 'Neurocosmetics',
-                      imageUrl: 'assets/images/image2.png',
-                      description:
+                        // Blog Card 2
+                        _blogCard(
+                          title: 'Neurocosmetics',
+                          imageUrl: 'assets/images/image2.png',
+                          description:
                           'Neurocosmetics focus on the connection between emotional well-being and skin health. Products infused with adaptogens and neuropeptides aim to reduce stress-induced skin issues, promoting a holistic approach to skincare.',
-                    ),
+                        ),
 
-                    // Blog Card 3
-                    _blogCard(
-                      title: 'Microbiome Skincare',
-                      imageUrl: 'assets/images/image7.png',
-                      description:
-                          'Microbiome skincare targets the balance of good bacteria on the skin’s surface. Products with prebiotics, probiotics, and postbiotics help strengthen the skin barrier, reduce inflammation, and support a healthy, resilient complexion.',
-                    ),
+                        // Blog Card 3
+                        _blogCard(
+                            title: 'Microbiome Skincare',
+                            imageUrl: 'assets/images/image7.png',
+                            description:
+                            'Microbiome skincare targets the balance of good bacteria on the skins surface. Products with prebiotics, probiotics, and postbiotics help strengthen the skin barrier, reduce inflammation, and support a healthy, resilient complexion.',
+                        ),
 
-                    const SizedBox(height: 20),
-                  ],
+                        const SizedBox(height: 20),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-    ),
-  );
-}
-
+    );
+  }
 
   static Widget _blogCard({
     required String title,
@@ -145,7 +83,7 @@ Widget build(BuildContext context) {
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Color(0xFF3C3A1E), // Dark olive green background
+        color: const Color(0xFF3C3A1E), // Dark olive green background
         borderRadius: BorderRadius.circular(20),
       ),
       child: Column(

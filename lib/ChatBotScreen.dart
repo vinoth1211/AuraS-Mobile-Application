@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'dart:async';
 
 // Import shared widgets
 import 'shared_widgets.dart';
@@ -24,6 +25,9 @@ class _ChatBotScreenState extends State<ChatBotScreen>
   bool _isLoading = false;
   bool _quotaExceeded = false;
   bool _isInputFocused = false;
+  String _currentlyTypingResponse = '';
+  Timer? _typingTimer;
+  int _typingIndex = 0;
 
   // Animation controllers
   late AnimationController _floatingAnimationController;
@@ -32,6 +36,7 @@ class _ChatBotScreenState extends State<ChatBotScreen>
   late AnimationController _slideController;
   late AnimationController _shimmerController;
   late AnimationController _breathingController;
+  late AnimationController _typingController;
 
   // Animations
   late Animation<double> _floatingAnimation;
@@ -40,6 +45,7 @@ class _ChatBotScreenState extends State<ChatBotScreen>
   late Animation<Offset> _slideAnimation;
   late Animation<double> _shimmerAnimation;
   late Animation<double> _breathingAnimation;
+  late Animation<double> _typingAnimation;
 
   static const String apiKey = 'AIzaSyDtuMZVCIfAuZBFLuuZob2O3wjlF1vgxjY';
   late GenerativeModel _textModel;
@@ -132,6 +138,16 @@ class _ChatBotScreenState extends State<ChatBotScreen>
       curve: Curves.easeInOut,
     ));
 
+    // Typing animation for AI responses
+    _typingController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _typingAnimation = CurvedAnimation(
+      parent: _typingController,
+      curve: Curves.easeOut,
+    );
+
     // Start animations
     _floatingAnimationController.repeat(reverse: true);
     _breathingController.repeat(reverse: true);
@@ -173,6 +189,8 @@ class _ChatBotScreenState extends State<ChatBotScreen>
     _slideController.dispose();
     _shimmerController.dispose();
     _breathingController.dispose();
+    _typingController.dispose();
+    _typingTimer?.cancel();
     _textFieldFocusNode.dispose();
     super.dispose();
   }
@@ -216,9 +234,13 @@ class _ChatBotScreenState extends State<ChatBotScreen>
                           child: ListView.builder(
                             controller: _scrollController,
                             reverse: true,
-                            itemCount: _messages.length,
+                            itemCount: _messages.length + (_isLoading ? 1 : 0),
                             itemBuilder: (context, index) {
-                              final reversedIndex = _messages.length - 1 - index;
+                              if (_isLoading && index == 0) {
+                                return _buildTypingIndicator();
+                              }
+
+                              final reversedIndex = _messages.length - 1 - (_isLoading ? index - 1 : index);
                               return _buildModernMessageBubble(_messages[reversedIndex], index);
                             },
                           ),
@@ -283,6 +305,67 @@ class _ChatBotScreenState extends State<ChatBotScreen>
                       ),
                     ),
                 ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTypingIndicator() {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Container(
+        constraints: BoxConstraints(
+          maxWidth: MediaQuery.of(context).size.width * 0.8,
+        ),
+        margin: const EdgeInsets.symmetric(vertical: 8),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                ),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.smart_toy_outlined, color: Colors.white, size: 16),
+            ),
+            const SizedBox(width: 12),
+            Flexible(
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFFFFFFF), Color(0xFFF8FAFC)],
+                  ),
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(20),
+                    topRight: Radius.circular(20),
+                    bottomLeft: Radius.circular(4),
+                    bottomRight: Radius.circular(20),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 12,
+                      spreadRadius: 0,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                  border: Border.all(color: Colors.grey[200]!, width: 1),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    AnimatedDotsIndicator(),
+                  ],
+                ),
               ),
             ),
           ],
@@ -400,6 +483,9 @@ class _ChatBotScreenState extends State<ChatBotScreen>
   }
 
   Widget _buildModernMessageBubble(Message message, int index) {
+    final isTypingMessage = !message.isUser && _currentlyTypingResponse.isNotEmpty &&
+        _messages.indexOf(message) == _messages.length - 1;
+
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0.0, end: 1.0),
       duration: Duration(milliseconds: 400 + (index * 50)),
@@ -410,14 +496,18 @@ class _ChatBotScreenState extends State<ChatBotScreen>
           child: AnimatedOpacity(
             duration: const Duration(milliseconds: 400),
             opacity: value,
-            child: _buildMessageBubble(message),
+            child: _buildMessageBubble(
+              message,
+              displayText: isTypingMessage ? _currentlyTypingResponse : message.text,
+              isTyping: isTypingMessage,
+            ),
           ),
         );
       },
     );
   }
 
-  Widget _buildMessageBubble(Message message) {
+  Widget _buildMessageBubble(Message message, {String? displayText, bool isTyping = false}) {
     return Align(
       alignment: message.isUser ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
@@ -430,16 +520,24 @@ class _ChatBotScreenState extends State<ChatBotScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (!message.isUser) ...[
-              Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
-                  ),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.smart_toy_outlined, color: Colors.white, size: 16),
+              AnimatedBuilder(
+                animation: _breathingAnimation,
+                builder: (context, child) {
+                  return Transform.scale(
+                    scale: isTyping ? _breathingAnimation.value : 1.0,
+                    child: Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                        ),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.smart_toy_outlined, color: Colors.white, size: 16),
+                    ),
+                  );
+                },
               ),
               const SizedBox(width: 12),
             ],
@@ -498,15 +596,26 @@ class _ChatBotScreenState extends State<ChatBotScreen>
                       ),
                       const SizedBox(height: 12),
                     ],
-                    Text(
-                      message.text,
-                      style: TextStyle(
-                        color: message.isUser ? Colors.white : Colors.grey[800],
-                        fontSize: 15,
-                        height: 1.4,
-                        fontWeight: FontWeight.w500,
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 200),
+                      child: Text(
+                        displayText ?? message.text,
+                        key: ValueKey<String>(displayText ?? message.text),
+                        style: TextStyle(
+                          color: message.isUser ? Colors.white : Colors.grey[800],
+                          fontSize: 15,
+                          height: 1.4,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ),
+                    if (isTyping) ...[
+                      const SizedBox(height: 8),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: AnimatedDotsIndicator(),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -766,10 +875,7 @@ class _ChatBotScreenState extends State<ChatBotScreen>
     try {
       final response = await _getGeminiResponse(messageText, imageToSend);
       if (response != null) {
-        setState(() {
-          _messages.add(Message(text: response, isUser: false));
-          _quotaExceeded = false;
-        });
+        _startTypingAnimation(response);
       } else {
         throw Exception('No response received from the AI model');
       }
@@ -797,6 +903,34 @@ class _ChatBotScreenState extends State<ChatBotScreen>
       setState(() => _isLoading = false);
       _scrollToBottom();
     }
+  }
+
+  void _startTypingAnimation(String fullResponse) {
+    _typingTimer?.cancel();
+    _typingIndex = 0;
+    _currentlyTypingResponse = '';
+
+    // Add the AI message immediately but empty (will be filled by typing animation)
+    setState(() {
+      _messages.add(Message(text: '', isUser: false));
+    });
+
+    _typingTimer = Timer.periodic(const Duration(milliseconds: 20), (timer) {
+      if (_typingIndex < fullResponse.length) {
+        setState(() {
+          _currentlyTypingResponse = fullResponse.substring(0, _typingIndex + 1);
+          _typingIndex++;
+        });
+        _scrollToBottom();
+      } else {
+        timer.cancel();
+        setState(() {
+          // Replace the typing message with the full response
+          _messages.last = Message(text: fullResponse, isUser: false);
+          _currentlyTypingResponse = '';
+        });
+      }
+    });
   }
 
   String _handleApiError(dynamic error) {
@@ -881,4 +1015,67 @@ class Message {
     required this.isUser,
     this.image,
   });
+}
+
+class AnimatedDotsIndicator extends StatefulWidget {
+  const AnimatedDotsIndicator({super.key});
+
+  @override
+  State<AnimatedDotsIndicator> createState() => _AnimatedDotsIndicatorState();
+}
+
+class _AnimatedDotsIndicatorState extends State<AnimatedDotsIndicator>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    )..repeat(reverse: true);
+
+    _animation = Tween<double>(begin: 0.5, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeInOut,
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: List.generate(3, (index) {
+        return AnimatedBuilder(
+          animation: _controller,
+          builder: (context, child) {
+            return Opacity(
+              opacity: _animation.value - (index * 0.2),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 2),
+                child: Container(
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[600],
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      }),
+    );
+  }
 }

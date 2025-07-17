@@ -6,8 +6,6 @@ import 'ChatBotScreen.dart';
 import 'package:skincare_app/DoctorChannelingScreen.dart';
 import 'package:skincare_app/shared_widgets.dart';
 
-import 'my_appointments_screen.dart';
-
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -54,7 +52,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => MyAppointmentsScreen(),
+                builder: (context) => AppointmentsScreen(userId: '',),
               ),
             );
           },
@@ -107,11 +105,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: const [
                     Text(
-                      'Reminders',
-                      style: TextStyle(color: Color(0xFF666666)),
-                    ),
-                    Text(
-                      '1 Appointment',
+                      'My Appointments',
                       style: TextStyle(color: Color(0xFF666666)),
                     ),
                   ],

@@ -9,6 +9,8 @@ import 'package:skincare_app/FAQScreen.dart';
 import 'package:skincare_app/home_page.dart';
 import 'package:skincare_app/ChatBotScreen.dart';
 
+import 'AppointmentScreen.dart';
+
 class CustomHeader extends StatefulWidget implements PreferredSizeWidget {
   const CustomHeader({super.key});
 
@@ -50,7 +52,7 @@ class _CustomHeaderState extends State<CustomHeader> {
       case 'My Appointments':
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => const DoctorChannelingScreen()),
+          MaterialPageRoute(builder: (_) => const AppointmentsScreen(userId: '1',)),
         );
         break;
       case 'FAQ':

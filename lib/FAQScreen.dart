@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 
 // Import shared widgets
 import 'shared_widgets.dart';
@@ -15,6 +16,8 @@ class _FAQScreenState extends State<FAQScreen> with TickerProviderStateMixin {
   String _searchQuery = '';
   String _selectedCategory = 'All';
   late TabController _tabController;
+  late AnimationController _fadeController;
+  late Animation<double> _fadeAnimation;
 
   final List<FAQItem> _allFAQs = [
     FAQItem(
@@ -59,6 +62,35 @@ class _FAQScreenState extends State<FAQScreen> with TickerProviderStateMixin {
     ),
   ];
 
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: _categories.length, vsync: this);
+
+    _fadeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+
+    _fadeAnimation = CurvedAnimation(
+      parent: _fadeController,
+      curve: Curves.easeInOut,
+    );
+
+    // Start animation after build
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      _fadeController.forward();
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _tabController.dispose();
+    _fadeController.dispose();
+    super.dispose();
+  }
+
   List<String> get _categories {
     final categories = ['All'] + _allFAQs.map((faq) => faq.category).toSet().toList();
     return categories;
@@ -85,19 +117,6 @@ class _FAQScreenState extends State<FAQScreen> with TickerProviderStateMixin {
   }
 
   @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: _categories.length, vsync: this);
-  }
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    _tabController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
@@ -107,167 +126,255 @@ class _FAQScreenState extends State<FAQScreen> with TickerProviderStateMixin {
             const CustomHeader(),
             const CustomNavigationBar(activeRoute: 'FAQ'),
 
-            // Header Section
-            Container(
-              padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
+            // Header Section with Parallax Effect
+            FadeTransition(
+              opacity: _fadeAnimation,
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      const Color(0xFF667EEA).withOpacity(0.9),
+                      const Color(0xFF764BA2).withOpacity(0.9),
+                    ],
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 20,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
                 ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Frequently Asked Questions',
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      letterSpacing: -0.5,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SlideTransition(
+                      position: Tween<Offset>(
+                        begin: const Offset(0, -0.2),
+                        end: Offset.zero,
+                      ).animate(_fadeAnimation),
+                      child: const Text(
+                        'Frequently Asked Questions',
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          letterSpacing: -0.5,
+                          height: 1.2,
+                        ),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Find answers to common skincare questions',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.white.withOpacity(0.9),
+                    const SizedBox(height: 8),
+                    SlideTransition(
+                      position: Tween<Offset>(
+                        begin: const Offset(0, -0.2),
+                        end: Offset.zero,
+                      ).animate(CurvedAnimation(
+                        parent: _fadeController,
+                        curve: const Interval(0.2, 1.0, curve: Curves.easeOut),
+                      )),
+                      child: Text(
+                        'Find answers to common skincare questions',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.white.withOpacity(0.9),
+                        ),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 20),
+                    const SizedBox(height: 24),
 
-                  // Modern Search Bar
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          blurRadius: 20,
-                          offset: const Offset(0, 8),
+                    // Modern Search Bar with Animation
+                    ScaleTransition(
+                      scale: CurvedAnimation(
+                        parent: _fadeController,
+                        curve: const Interval(0.4, 1.0, curve: Curves.elasticOut),
+                      ),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 20,
+                              offset: const Offset(0, 8),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                    child: TextField(
-                      controller: _searchController,
-                      onChanged: (value) {
-                        setState(() {
-                          _searchQuery = value;
-                        });
-                      },
-                      decoration: InputDecoration(
-                        hintText: 'Search your skincare questions...',
-                        hintStyle: TextStyle(
-                          color: Colors.grey[500],
-                          fontSize: 15,
-                        ),
-                        prefixIcon: Container(
-                          padding: const EdgeInsets.all(12),
-                          child: Icon(
-                            Icons.search_rounded,
-                            color: Colors.grey[400],
-                            size: 22,
-                          ),
-                        ),
-                        suffixIcon: _searchQuery.isNotEmpty
-                            ? Container(
-                          margin: const EdgeInsets.only(right: 8),
-                          child: IconButton(
-                            icon: Container(
-                              padding: const EdgeInsets.all(4),
-                              decoration: BoxDecoration(
-                                color: Colors.grey[100],
-                                shape: BoxShape.circle,
-                              ),
+                        child: TextField(
+                          controller: _searchController,
+                          onChanged: (value) {
+                            setState(() {
+                              _searchQuery = value;
+                            });
+                          },
+                          decoration: InputDecoration(
+                            hintText: 'Search your skincare questions...',
+                            hintStyle: TextStyle(
+                              color: Colors.grey[500],
+                              fontSize: 15,
+                            ),
+                            prefixIcon: Container(
+                              padding: const EdgeInsets.all(12),
                               child: Icon(
-                                Icons.close_rounded,
-                                color: Colors.grey[600],
-                                size: 16,
+                                Icons.search_rounded,
+                                color: Colors.grey[400],
+                                size: 22,
                               ),
                             ),
-                            onPressed: () {
-                              _searchController.clear();
-                              setState(() {
-                                _searchQuery = '';
-                              });
-                            },
+                            suffixIcon: _searchQuery.isNotEmpty
+                                ? Container(
+                              margin: const EdgeInsets.only(right: 8),
+                              child: IconButton(
+                                icon: Container(
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey[100],
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(
+                                    Icons.close_rounded,
+                                    color: Colors.grey[600],
+                                    size: 16,
+                                  ),
+                                ),
+                                onPressed: () {
+                                  _searchController.clear();
+                                  setState(() {
+                                    _searchQuery = '';
+                                  });
+                                },
+                              ),
+                            )
+                                : null,
+                            border: InputBorder.none,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 16,
+                            ),
                           ),
-                        )
-                            : null,
-                        border: InputBorder.none,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 16,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            color: Colors.black87,
+                          ),
                         ),
                       ),
-                      style: const TextStyle(
-                        fontSize: 15,
-                        color: Colors.black87,
-                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
 
-            // Category Filter Chips
-            Container(
-              height: 60,
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                itemCount: _categories.length,
-                itemBuilder: (context, index) {
-                  final category = _categories[index];
-                  final isSelected = _selectedCategory == category;
+            // Animated Category Filter Chips
+            SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(0, 0.5),
+                end: Offset.zero,
+              ).animate(CurvedAnimation(
+                parent: _fadeController,
+                curve: const Interval(0.6, 1.0, curve: Curves.easeOut),
+              )),
+              child: Container(
+                height: 72,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  itemCount: _categories.length,
+                  itemBuilder: (context, index) {
+                    final category = _categories[index];
+                    final isSelected = _selectedCategory == category;
 
-                  return Container(
-                    margin: const EdgeInsets.only(right: 12),
-                    child: FilterChip(
-                      label: Text(category),
-                      selected: isSelected,
-                      onSelected: (selected) {
-                        setState(() {
-                          _selectedCategory = category;
-                        });
-                      },
-                      backgroundColor: Colors.white,
-                      selectedColor: const Color(0xFF667EEA).withOpacity(0.15),
-                      checkmarkColor: const Color(0xFF667EEA),
-                      labelStyle: TextStyle(
-                        color: isSelected ? const Color(0xFF667EEA) : Colors.grey[700],
-                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                        fontSize: 13,
+                    return AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      margin: EdgeInsets.only(
+                        right: 12,
+                        top: isSelected ? 0 : 4,
+                        bottom: isSelected ? 0 : 4,
                       ),
-                      shape: RoundedRectangleBorder(
+                      child: InkWell(
                         borderRadius: BorderRadius.circular(20),
-                        side: BorderSide(
-                          color: isSelected ? const Color(0xFF667EEA) : Colors.grey[300]!,
-                          width: 1.5,
+                        onTap: () {
+                          setState(() {
+                            _selectedCategory = category;
+                          });
+                        },
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 300),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 10,
+                          ),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? _getCategoryColor(category)
+                                : Colors.white,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: isSelected
+                                  ? _getCategoryColor(category)
+                                  : Colors.grey[300]!,
+                              width: 1.5,
+                            ),
+                            boxShadow: isSelected
+                                ? [
+                              BoxShadow(
+                                color: _getCategoryColor(category)
+                                    .withOpacity(0.3),
+                                blurRadius: 12,
+                                offset: const Offset(0, 4),
+                              ),
+                            ]
+                                : null,
+                          ),
+                          child: Center(
+                            child: Text(
+                              category,
+                              style: TextStyle(
+                                color: isSelected
+                                    ? Colors.white
+                                    : Colors.grey[700],
+                                fontWeight: isSelected
+                                    ? FontWeight.w600
+                                    : FontWeight.w500,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
-                      elevation: isSelected ? 2 : 0,
-                      shadowColor: const Color(0xFF667EEA).withOpacity(0.3),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
             ),
 
-            // FAQ List
+            // FAQ List with Staggered Animations
             Expanded(
               child: _filteredFAQs.isEmpty
                   ? _buildNoResultsWidget()
                   : ListView.builder(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
                 itemCount: _filteredFAQs.length,
                 itemBuilder: (context, index) {
-                  return _buildModernFAQCard(_filteredFAQs[index], index);
+                  return AnimatedFAQCard(
+                    faq: _filteredFAQs[index],
+                    index: index,
+                    fadeController: _fadeController,
+                  );
                 },
               ),
             ),
@@ -278,45 +385,155 @@ class _FAQScreenState extends State<FAQScreen> with TickerProviderStateMixin {
   }
 
   Widget _buildNoResultsWidget() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: Colors.grey[100],
-              shape: BoxShape.circle,
+    return FadeTransition(
+      opacity: _fadeAnimation,
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ScaleTransition(
+              scale: CurvedAnimation(
+                parent: _fadeController,
+                curve: Curves.elasticOut,
+              ),
+              child: Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      const Color(0xFF667EEA).withOpacity(0.1),
+                      const Color(0xFF764BA2).withOpacity(0.1),
+                    ],
+                  ),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.search_off_rounded,
+                  size: 48,
+                  color: Colors.grey[400],
+                ),
+              ),
             ),
-            child: Icon(
-              Icons.search_off_rounded,
-              size: 48,
-              color: Colors.grey[400],
+            const SizedBox(height: 24),
+            SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(0, 0.5),
+                end: Offset.zero,
+              ).animate(_fadeAnimation),
+              child: const Text(
+                'No FAQs found',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black87,
+                ),
+              ),
             ),
-          ),
-          const SizedBox(height: 24),
-          const Text(
-            'No FAQs found',
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w600,
-              color: Colors.black87,
+            const SizedBox(height: 8),
+            SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(0, 0.5),
+                end: Offset.zero,
+              ).animate(CurvedAnimation(
+                parent: _fadeController,
+                curve: const Interval(0.5, 1.0, curve: Curves.easeOut),
+              )),
+              child: Text(
+                'Try adjusting your search or filter',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey[600],
+                ),
+              ),
             ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Try adjusting your search or filter',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey[600],
-            ),
-          ),
-        ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class AnimatedFAQCard extends StatefulWidget {
+  final FAQItem faq;
+  final int index;
+  final AnimationController fadeController;
+
+  const AnimatedFAQCard({
+    super.key,
+    required this.faq,
+    required this.index,
+    required this.fadeController,
+  });
+
+  @override
+  State<AnimatedFAQCard> createState() => _AnimatedFAQCardState();
+}
+
+class _AnimatedFAQCardState extends State<AnimatedFAQCard> {
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    final startDelay = 0.7 + (widget.index * 0.1);
+
+    _scaleAnimation = Tween<double>(begin: 0.95, end: 1.0).animate(
+      CurvedAnimation(
+        parent: widget.fadeController,
+        curve: Interval(
+          startDelay.clamp(0.0, 1.0),
+          1.0,
+          curve: Curves.easeOutBack,
+        ),
+      ),
+    );
+
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: widget.fadeController,
+        curve: Interval(
+          startDelay.clamp(0.0, 1.0),
+          1.0,
+          curve: Curves.easeIn,
+        ),
+      ),
+    );
+
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.2),
+      end: Offset.zero,
+    ).animate(
+      CurvedAnimation(
+        parent: widget.fadeController,
+        curve: Interval(
+          startDelay.clamp(0.0, 1.0),
+          1.0,
+          curve: Curves.easeOut,
+        ),
       ),
     );
   }
 
-  Widget _buildModernFAQCard(FAQItem faq, int index) {
+  @override
+  Widget build(BuildContext context) {
+    return ScaleTransition(
+      scale: _scaleAnimation,
+      child: FadeTransition(
+        opacity: _fadeAnimation,
+        child: SlideTransition(
+          position: _slideAnimation,
+          child: _buildModernFAQCard(widget.faq),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildModernFAQCard(FAQItem faq) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
@@ -324,9 +541,9 @@ class _FAQScreenState extends State<FAQScreen> with TickerProviderStateMixin {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 15,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
@@ -338,137 +555,155 @@ class _FAQScreenState extends State<FAQScreen> with TickerProviderStateMixin {
             childrenPadding: EdgeInsets.zero,
           ),
         ),
-        child: ExpansionTile(
-          tilePadding: const EdgeInsets.all(20),
-          childrenPadding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-          leading: Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  _getCategoryColor(faq.category),
-                  _getCategoryColor(faq.category).withOpacity(0.7),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(14),
-              boxShadow: [
-                BoxShadow(
-                  color: _getCategoryColor(faq.category).withOpacity(0.3),
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Icon(
-              _getCategoryIcon(faq.category),
-              color: Colors.white,
-              size: 22,
-            ),
-          ),
-          title: Text(
-            faq.question,
-            style: const TextStyle(
-              fontWeight: FontWeight.w600,
-              fontSize: 16,
-              color: Colors.black87,
-              height: 1.3,
-            ),
-          ),
-          subtitle: Container(
-            margin: const EdgeInsets.only(top: 8),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: _getCategoryColor(faq.category).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: Material(
+            color: Colors.transparent,
+            child: ExpansionTile(
+              tilePadding: const EdgeInsets.all(20),
+              childrenPadding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+              leading: Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      _getCategoryColor(faq.category),
+                      _getCategoryColor(faq.category).withOpacity(0.7),
+                    ],
                   ),
-                  child: Text(
-                    faq.category,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: _getCategoryColor(faq.category),
-                      fontWeight: FontWeight.w600,
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: [
+                    BoxShadow(
+                      color: _getCategoryColor(faq.category).withOpacity(0.2),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Icon(
+                  _getCategoryIcon(faq.category),
+                  color: Colors.white,
+                  size: 22,
+                ),
+              ),
+              title: Text(
+                faq.question,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                  color: Colors.black87,
+                  height: 1.3,
+                ),
+              ),
+              subtitle: Container(
+                margin: const EdgeInsets.only(top: 8),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: _getCategoryColor(faq.category).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        faq.category,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: _getCategoryColor(faq.category),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              iconColor: Colors.grey[600],
+              collapsedIconColor: Colors.grey[500],
+              expandedAlignment: Alignment.centerLeft,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeOut,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          _getCategoryColor(faq.category).withOpacity(0.03),
+                          _getCategoryColor(faq.category).withOpacity(0.08),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    padding: const EdgeInsets.all(20),
+                    child: Text(
+                      faq.answer,
+                      style: TextStyle(
+                        fontSize: 15,
+                        color: Colors.grey[800],
+                        height: 1.6,
+                      ),
                     ),
                   ),
                 ),
               ],
             ),
           ),
-          iconColor: Colors.grey[600],
-          collapsedIconColor: Colors.grey[500],
-          expandedAlignment: Alignment.centerLeft,
-          children: [
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.grey[50],
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Text(
-                faq.answer,
-                style: TextStyle(
-                  fontSize: 15,
-                  color: Colors.grey[800],
-                  height: 1.6,
-                ),
-              ),
-            ),
-          ],
         ),
       ),
     );
   }
+}
 
-  Color _getCategoryColor(String category) {
-    switch (category.toLowerCase()) {
-      case 'acne':
-        return const Color(0xFFEF4444);
-      case 'routine':
-        return const Color(0xFF8B5CF6);
-      case 'skin types':
-        return const Color(0xFF06B6D4);
-      case 'exfoliation':
-        return const Color(0xFF10B981);
-      case 'ingredients':
-        return const Color(0xFFF59E0B);
-      case 'pigmentation':
-        return const Color(0xFFEC4899);
-      case 'professional care':
-        return const Color(0xFF3B82F6);
-      case 'sun protection':
-        return const Color(0xFFF97316);
-      default:
-        return const Color(0xFF6B7280);
-    }
+Color _getCategoryColor(String category) {
+  switch (category.toLowerCase()) {
+    case 'acne':
+      return const Color(0xFFEF4444);
+    case 'routine':
+      return const Color(0xFF8B5CF6);
+    case 'skin types':
+      return const Color(0xFF06B6D4);
+    case 'exfoliation':
+      return const Color(0xFF10B981);
+    case 'ingredients':
+      return const Color(0xFFF59E0B);
+    case 'pigmentation':
+      return const Color(0xFFEC4899);
+    case 'professional care':
+      return const Color(0xFF3B82F6);
+    case 'sun protection':
+      return const Color(0xFFF97316);
+    default:
+      return const Color(0xFF6B7280);
   }
+}
 
-  IconData _getCategoryIcon(String category) {
-    switch (category.toLowerCase()) {
-      case 'acne':
-        return Icons.face_retouching_natural_rounded;
-      case 'routine':
-        return Icons.schedule_rounded;
-      case 'skin types':
-        return Icons.person_rounded;
-      case 'exfoliation':
-        return Icons.cleaning_services_rounded;
-      case 'ingredients':
-        return Icons.science_rounded;
-      case 'pigmentation':
-        return Icons.palette_rounded;
-      case 'professional care':
-        return Icons.medical_services_rounded;
-      case 'sun protection':
-        return Icons.wb_sunny_rounded;
-      default:
-        return Icons.help_outline_rounded;
-    }
+IconData _getCategoryIcon(String category) {
+  switch (category.toLowerCase()) {
+    case 'acne':
+      return Icons.face_retouching_natural_rounded;
+    case 'routine':
+      return Icons.schedule_rounded;
+    case 'skin types':
+      return Icons.person_rounded;
+    case 'exfoliation':
+      return Icons.cleaning_services_rounded;
+    case 'ingredients':
+      return Icons.science_rounded;
+    case 'pigmentation':
+      return Icons.palette_rounded;
+    case 'professional care':
+      return Icons.medical_services_rounded;
+    case 'sun protection':
+      return Icons.wb_sunny_rounded;
+    default:
+      return Icons.help_outline_rounded;
   }
 }
 

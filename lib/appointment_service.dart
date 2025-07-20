@@ -461,7 +461,7 @@ class AppointmentService {
 
       // Validate required fields
       if (userEmail.isEmpty) throw Exception('User email missing');
-      if (userPhone.isEmpty) throw Exception('User phone missing');
+      // if (userPhone.isEmpty) throw Exception('User phone missing');
       if (userName.isEmpty) throw Exception('Username missing');
 
       // Create complete appointment with user details
